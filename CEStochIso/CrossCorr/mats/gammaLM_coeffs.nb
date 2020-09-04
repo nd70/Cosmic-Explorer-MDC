@@ -1,0 +1,2871 @@
+(************** Content-type: application/mathematica **************
+                     CreatedBy='Mathematica 5.2'
+
+                    Mathematica-Compatible Notebook
+
+This notebook can be used with any Mathematica-compatible
+application, such as Mathematica, MathReader or Publicon. The data
+for the notebook starts with the line containing stars above.
+
+To get the notebook into a Mathematica-compatible application, do
+one of the following:
+
+* Save the data starting with the line of stars above into a file
+  with a name ending in .nb, then open the file inside the
+  application;
+
+* Copy the data starting with the line of stars above to the
+  clipboard, then use the Paste menu command inside the application.
+
+Data for notebooks contains only printable 7-bit ASCII and can be
+sent directly in email or through ftp in text mode.  Newlines can be
+CR, LF or CRLF (Unix, Macintosh or MS-DOS style).
+
+NOTE: If you modify the data for this notebook not in a Mathematica-
+compatible application, you must delete the line below containing
+the word CacheID, otherwise Mathematica-compatible applications may
+try to use invalid cache data.
+
+For more information on notebooks and Mathematica-compatible 
+applications, contact Wolfram Research:
+  web: http://www.wolfram.com
+  email: info@wolfram.com
+  phone: +1-217-398-0700 (U.S.)
+
+Notebook reader applications are available free of charge from 
+Wolfram Research.
+*******************************************************************)
+
+(*CacheID: 232*)
+
+
+(*NotebookFileLineBreakTest
+NotebookFileLineBreakTest*)
+(*NotebookOptionsPosition[    108216,       2541]*)
+(*NotebookOutlinePosition[    108927,       2566]*)
+(*  CellTagsIndexPosition[    108883,       2562]*)
+(*WindowFrame->Normal*)
+
+
+
+Notebook[{
+Cell[BoxData[
+    \( (*\ 
+      Mathematica\ notebook\ for\ analytic\ caculation\ of\ the\ overlap\ \
+reduction\ function\ overlap_LM \((f, 
+          t)\)\ for\ detector\ pairs\ constructed\ from\ the\ Hanford, \ 
+      Livingston, \ Virgo, \ GEO, \ 
+      and\ TAMA\ detectors . \ 
+            Follows\ conventions\ and\ definitions\ in\ Allen - Ottewill, \ 
+      PRD\ 56, \ 545\ 1997\ *) \)], "Input"],
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      choose\ detector\ pair\ *) \)\(\[IndentingNewLine]\)\(\
+\[IndentingNewLine]\)\(\(detectorPair\  = \ \
+"\<VV\>";\)\(\[IndentingNewLine]\)\( (*\(detectorPair\  = \ \
+"\<HH\>";\)*) \)\(\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<LL\>";\)\
+*) \)\(\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<HL\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<HV\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<HG\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<HT\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<LV\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<LG\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<LT\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<VG\>";\)*) \)\(\
+\[IndentingNewLine]\)\( (*\(detectorPair\  = \ "\<VT\>";\)*) \)\(\
+\[IndentingNewLine]\)
+    \( (*\(detectorPair\  = \ "\<GT\>";\)*) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      some\ globally\ defined\ parameters\ *) \)\(\[IndentingNewLine]\)\(\
+\[IndentingNewLine]\)\(\(Lmax\  = \ 30;\)\[IndentingNewLine]
+    calcPrecision\  = \ 64; \  (*\ 
+      precision\ for\ initial\ numerical\ calculations\ \
+*) \[IndentingNewLine]Off[General::spell]\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      WGS - 84\ ellipsoidal\ model\ of\ the\ Earth\ *) \)\(\n\)\(\
+\[IndentingNewLine]\)\( (*\ 
+      square\ of\ semimajor\ axis\ \((equatorial\ radius)\)\ *) \)\(\
+\[IndentingNewLine]\)\(\(a2 = 6378137\ ^2;\)\ \[IndentingNewLine] (*\ 
+      square\ of\ semiminor\ axis\ \((polar\ radius)\)\ \
+*) \[IndentingNewLine]
+    \(b2 = \((6356752 + 314/1000)\)^2;\)\)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      get\ location\ and\ orientation\ information\ for\ the\ first\ detector\
+\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(Switch[
+        StringTake[
+          detectorPair, {1}], \ \
+\[IndentingNewLine]\[IndentingNewLine]"\<H\>", \[IndentingNewLine]{ (*\ 
+            Hanford\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Hanford\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((46 + \((27 + \((18 + 
+                              528/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \(-\((119 + \((24 + \((27 \
++ 5657/10000)\)/60)\)/60)\)\)*Pi/180; \[IndentingNewLine]height = \ 
+            142 + 554/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \(-\((35 \
++ 9994/10000)\)\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = \(-\((6 + 
+                    195/1000)\)\)*10^\((\(-4\))\); \[IndentingNewLine]\
+\[IndentingNewLine]yarmAz\  = \((180 + 54 + 6/10000)\)*
+              Pi/180; \[IndentingNewLine]yarmAlt\  = \ \((1 + 
+                  25/100)\)*10^\((\(-5\))\);}, \[IndentingNewLine]\
+\[IndentingNewLine]"\<L\>", \[IndentingNewLine]{ (*\ 
+            Livingston\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Livingston\>"]]; \[IndentingNewLine]\
+\[IndentingNewLine]lat = \((30 + \((33 + \((46 + 4196/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \(-\((90 + \((46 + \((27 + 
+                                2654/10000)\)/60)\)/60)\)\)*
+              Pi/180; \[IndentingNewLine]height\  = \(-\((6 + 
+                  574/1000)\)\); \[IndentingNewLine]\[IndentingNewLine]xarmAz \
+= \((180 + \((72 + 2835/10000)\))\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = \(-\((3 + 
+                    121/1000)\)\)*10^\((\(-4\))\); \[IndentingNewLine]\
+\[IndentingNewLine]yarmAz = \((180 - \((17 + 7165/10000)\))\)*
+              Pi/180; \[IndentingNewLine]yarmAlt = \ \(-\((6 + 
+                    107/1000)\)\)*10^\((\(-4\))\);}, \[IndentingNewLine]\
+\[IndentingNewLine]"\<V\>", \[IndentingNewLine]{ (*\ 
+            Virgo\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Virgo\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((43 + \((37 + \((53 + 
+                              921/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((10 + \((30 + \((16 + 
+                              1878/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            51 + 884/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - \
+\((70 + 5674/10000)\))\)*Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - \
+\((160 + 5674/10000)\))\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}, \[IndentingNewLine]\[IndentingNewLine]"\<G\>", \
+\[IndentingNewLine]{ (*\ GEO\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<GEO\>"]]; \[IndentingNewLine]\[IndentingNewLine]lat\
+\  = \((52 + \((14 + \((42 + 528/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((9 + \((48 + \((25 + 
+                              894/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            114 + 425/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - \
+\((21 + 6117/10000)\))\)*Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - \
+\((115 + 9431/10000)\))\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}, \[IndentingNewLine]\[IndentingNewLine]"\<T\>", \
+\[IndentingNewLine]{ (*\ TAMA\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<TAMA\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((35 + \((40 + \((35 + 6/10)\)/
+                          60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((139 + \((32 + \((9 + 
+                              8/10)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            90; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - 180)\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - 
+                  270)\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}\[IndentingNewLine]\[IndentingNewLine]];\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Virgo\"\>",
+      StringForm[ "Virgo"],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      calculate\ relevant\ geometric\ quantities\ for\ the\ first\ detector\ \
+*) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(R = 
+        Sqrt[a2*Cos[lat]^2\  + \ b2*Sin[lat]^2];\)\n
+    \(R1\  = \ \((a2/R\  + \ height)\)*Cos[lat];\)\[IndentingNewLine]
+    \(R2\  = \ \((b2/R\  + \ height)\)*
+          Sin[lat];\)\[IndentingNewLine]\[IndentingNewLine]
+    \(x1\  = \ {R1*Cos[lon], \ R1*Sin[lon]\ , 
+          R2}\ ;\)\[IndentingNewLine]\[IndentingNewLine]
+    \(uloc\  = \ {Cos[xarmAlt]*Sin[xarmAz], \ Cos[xarmAlt]*Cos[xarmAz], \ 
+          Sin[xarmAlt]};\)\[IndentingNewLine]
+    \(vloc\  = \ {Cos[yarmAlt]*Sin[yarmAz], \ Cos[yarmAlt]*Cos[yarmAz], \ 
+          Sin[yarmAlt]};\)\[IndentingNewLine]\[IndentingNewLine]
+    \(Rcylloc\  = \ {{0, \(-Sin[lat]\), Cos[lat]}, \ {1, 0, 0}, {0, \ 
+            Cos[lat], \ Sin[lat]}};\)\[IndentingNewLine]
+    \(Rcarcyl\  = \ {{Cos[lon], \ \(-Sin[lon]\), \ 0}, {Sin[lon], \ 
+            Cos[lon], \ 0}, {0, \ 0, \ 
+            1}};\)\[IndentingNewLine]\[IndentingNewLine]
+    \(u1\  = \ \((Rcarcyl\  . \ Rcylloc)\)\  . \ uloc;\)\[IndentingNewLine]
+    \(v1\  = \ \((Rcarcyl\  . \ Rcylloc\ )\) . \ vloc;\)\[IndentingNewLine]
+    \(d1\  = \ \((Outer[Times, \ u1, \ u1]\  - Outer[Times, \ v1, \ v1])\)/
+          2;\)\[IndentingNewLine]\[IndentingNewLine]
+    \(Print[StringForm["\<x1=``\>", MatrixForm[N[x1]]]];\)\[IndentingNewLine]
+    \(Print[
+        StringForm["\<u1=``\>", MatrixForm[N[u1]]]];\)\ \[IndentingNewLine]
+    \(Print[StringForm["\<v1=``\>", MatrixForm[N[v1]]]];\)\[IndentingNewLine]
+    \(Print[StringForm["\<d1=``\>", MatrixForm[N[d1]]]];\)\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x1=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x1=``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u1=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u1=``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v1=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v1=``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d1=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d1=``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      get\ location\ and\ orientation\ information\ for\ the\ second\ \
+detector\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(Switch[
+        StringTake[
+          detectorPair, {2}], \ \
+\[IndentingNewLine]\[IndentingNewLine]"\<H\>", \[IndentingNewLine]{ (*\ 
+            Hanford\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Hanford\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((46 + \((27 + \((18 + 
+                              528/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \(-\((119 + \((24 + \((27 \
++ 5657/10000)\)/60)\)/60)\)\)*Pi/180; \[IndentingNewLine]height = \ 
+            142 + 554/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \(-\((35 \
++ 9994/10000)\)\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = \(-\((6 + 
+                    195/1000)\)\)*10^\((\(-4\))\); \[IndentingNewLine]\
+\[IndentingNewLine]yarmAz\  = \((180 + 54 + 6/10000)\)*
+              Pi/180; \[IndentingNewLine]yarmAlt\  = \ \((1 + 
+                  25/100)\)*10^\((\(-5\))\);}, \[IndentingNewLine]\
+\[IndentingNewLine]"\<L\>", \[IndentingNewLine]{ (*\ 
+            Livingston\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Livingston\>"]]; \[IndentingNewLine]\
+\[IndentingNewLine]lat = \((30 + \((33 + \((46 + 4196/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \(-\((90 + \((46 + \((27 + 
+                                2654/10000)\)/60)\)/60)\)\)*
+              Pi/180; \[IndentingNewLine]height\  = \(-\((6 + 
+                  574/1000)\)\); \[IndentingNewLine]\[IndentingNewLine]xarmAz \
+= \((180 + \((72 + 2835/10000)\))\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = \(-\((3 + 
+                    121/1000)\)\)*10^\((\(-4\))\); \[IndentingNewLine]\
+\[IndentingNewLine]yarmAz = \((180 - \((17 + 7165/10000)\))\)*
+              Pi/180; \[IndentingNewLine]yarmAlt = \ \(-\((6 + 
+                    107/1000)\)\)*10^\((\(-4\))\);}, \[IndentingNewLine]\
+\[IndentingNewLine]"\<V\>", \[IndentingNewLine]{ (*\ 
+            Virgo\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<Virgo\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((43 + \((37 + \((53 + 
+                              921/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((10 + \((30 + \((16 + 
+                              1878/10000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            51 + 884/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - \
+\((70 + 5674/10000)\))\)*Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - \
+\((160 + 5674/10000)\))\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}, \[IndentingNewLine]\[IndentingNewLine]"\<G\>", \
+\[IndentingNewLine]{ (*\ GEO\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<GEO\>"]]; \[IndentingNewLine]\[IndentingNewLine]lat\
+\  = \((52 + \((14 + \((42 + 528/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((9 + \((48 + \((25 + 
+                              894/1000)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            114 + 425/
+                1000; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - \
+\((21 + 6117/10000)\))\)*Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - \
+\((115 + 9431/10000)\))\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}, \[IndentingNewLine]\[IndentingNewLine]"\<T\>", \
+\[IndentingNewLine]{ (*\ TAMA\ detector\ *) \[IndentingNewLine]Print[
+            StringForm["\<TAMA\>"]]; \
+\[IndentingNewLine]\[IndentingNewLine]lat\  = \((35 + \((40 + \((35 + 6/10)\)/
+                          60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]lon\  = \ \((139 + \((32 + \((9 + 
+                              8/10)\)/60)\)/60)\)*
+              Pi/180; \[IndentingNewLine]height = \ 
+            90; \[IndentingNewLine]\[IndentingNewLine]xarmAz = \((90 - 180)\)*
+              Pi/180; \[IndentingNewLine]xarmAlt\  = 
+            0; \[IndentingNewLine]\[IndentingNewLine]yarmAz\  = \((90 - 
+                  270)\)*Pi/180; \[IndentingNewLine]yarmAlt\  = \ 
+            0;}\[IndentingNewLine]\[IndentingNewLine]];\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Virgo\"\>",
+      StringForm[ "Virgo"],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      calculate\ relevant\ geometric\ quantities\ for\ the\ second\ detector\ \
+*) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(R = 
+        Sqrt[a2*Cos[lat]^2\  + \ b2*Sin[lat]^2];\)\n
+    \(R1\  = \ \((a2/R\  + \ height)\)*Cos[lat];\)\[IndentingNewLine]
+    \(R2\  = \ \((b2/R\  + \ height)\)*
+          Sin[lat];\)\[IndentingNewLine]\[IndentingNewLine]
+    \(x2\  = \ {R1*Cos[lon], \ R1*Sin[lon]\ , 
+          R2}\ ;\)\[IndentingNewLine]\[IndentingNewLine]
+    \(uloc\  = \ {Cos[xarmAlt]*Sin[xarmAz], \ Cos[xarmAlt]*Cos[xarmAz], \ 
+          Sin[xarmAlt]};\)\[IndentingNewLine]
+    \(vloc\  = \ {Cos[yarmAlt]*Sin[yarmAz], \ Cos[yarmAlt]*Cos[yarmAz], \ 
+          Sin[yarmAlt]};\)\[IndentingNewLine]\[IndentingNewLine]
+    \(Rcylloc\  = \ {{0, \(-Sin[lat]\), Cos[lat]}, \ {1, 0, 0}, {0, \ 
+            Cos[lat], \ Sin[lat]}};\)\[IndentingNewLine]
+    \(Rcarcyl\  = \ {{Cos[lon], \ \(-Sin[lon]\), \ 0}, {Sin[lon], \ 
+            Cos[lon], \ 0}, {0, \ 0, \ 
+            1}};\)\[IndentingNewLine]\[IndentingNewLine]
+    \(u2\  = \ Rcarcyl\  . \ Rcylloc\  . \ uloc;\)\[IndentingNewLine]
+    \(v2\  = \ Rcarcyl\  . \ Rcylloc\  . \ vloc;\)\[IndentingNewLine]
+    \(d2\  = \ \((Outer[Times, \ u2, \ u2]\  - Outer[Times, \ v2, \ v2])\)/
+          2;\)\[IndentingNewLine]\[IndentingNewLine]
+    \(Print[StringForm["\<x2=``\>", MatrixForm[N[x2]]]];\)\[IndentingNewLine]
+    \(Print[
+        StringForm["\<u2=``\>", MatrixForm[N[u2]]]];\)\ \[IndentingNewLine]
+    \(Print[StringForm["\<v2=``\>", MatrixForm[N[v2]]]];\)\[IndentingNewLine]
+    \(Print[StringForm["\<d2=``\>", MatrixForm[N[d2]]]];\)\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x2=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x2=``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u2=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u2=``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v2=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v2=``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d2=\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d2=``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      Rotate\ to\ Earth - 
+        based\ frame\ where\ separation\ vector\ has\ no\ y - 
+        component\ \
+*) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(DeltaX\  = \ 
+        x1 - x2;\)\(\[IndentingNewLine]\)
+    \(If\ \ [
+      StringTake[detectorPair, {1}] == 
+        StringTake[detectorPair, {2}], \[IndentingNewLine]phi = 
+        0, \[IndentingNewLine] (*\ else\ *) \[IndentingNewLine]phi\  = \ 
+        ArcTan[DeltaX[\([2]\)]/
+            DeltaX[\([1]\)]]\[IndentingNewLine]]\)\(\[IndentingNewLine]\)\(\
+\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<phi=`` degrees\>", 
+          N[phi*180/Pi]]];\)\(\[IndentingNewLine]\)
+    \(Rot1\  = \ {\ {Cos[phi], \ Sin[phi], \ 0}, \ {\(-Sin[phi]\), \ 
+            Cos[phi], \ 0}, \ {0, \ 0, \ 
+            1}};\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(x1bar\  = \ Rot1 . x1;\)\(\[IndentingNewLine]\)
+    \(u1bar\  = \ Rot1 . u1;\)\(\[IndentingNewLine]\)
+    \(v1bar\  = \ Rot1 . v1;\)\(\[IndentingNewLine]\)
+    \(d1bar\  = \ \((Outer[Times, \ u1bar, \ u1bar]\  - 
+              Outer[Times, \ v1bar, \ v1bar])\)/
+          2;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(x2bar\  = \ Rot1 . x2;\)\(\[IndentingNewLine]\)
+    \(u2bar\  = \ Rot1 . u2;\)\(\[IndentingNewLine]\)
+    \(v2bar\  = \ Rot1 . v2;\)\(\[IndentingNewLine]\)
+    \(d2bar\  = \ \((Outer[Times, \ u2bar, \ u2bar]\  - 
+              Outer[Times, \ v2bar, \ v2bar])\)/
+          2;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(DeltaXbar\  = \ 
+        x1bar - x2bar;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<x1bar =``\>", 
+          MatrixForm[N[x1bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<u1bar =``\>", 
+          MatrixForm[N[u1bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<v1bar =``\>", 
+          MatrixForm[N[v1bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[StringForm["\<d1bar =``\>", MatrixForm[N[d1bar]]]]; 
+    Print[StringForm["\<x2bar =``\>", 
+        MatrixForm[N[x2bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<u2bar =``\>", 
+          MatrixForm[N[u2bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<v2bar =``\>", 
+          MatrixForm[N[v2bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<d2bar =``\>", 
+          MatrixForm[N[d2bar]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<DeltaXbar =``\>", 
+          MatrixForm[
+            N[DeltaXbar]]]];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\
+ (*\ set\ y - component\ of\ DeltaXbar\ identically\ to\ zero; \ 
+      was\ non - 
+        zero\ due\ to\ machine\ precision\ *) \)\(\[IndentingNewLine]\)
+    \(DeltaXbar[\([2]\)] = 0;\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<DeltaXbar =``\>", 
+          MatrixForm[
+            N[DeltaXbar]]]];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \( (*\ compare\ with\ Allen - Ottewill, \ between\ Eqs . \ 6.2, \ 
+      6.3\ *) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(0\)], "Output"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"phi=\\!\\(0.`\\) degrees\"\>",
+      StringForm[ "phi=`` degrees", 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x1bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x1bar =``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u1bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u1bar =``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v1bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v1bar =``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d1bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d1bar =``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x2bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x2bar =``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u2bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u2bar =``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v2bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v2bar =``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d2bar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d2bar =``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"DeltaXbar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"0.`\\\"}, {\\\"0.`\\\"}, {\\\"0.`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "DeltaXbar =``", 
+        MatrixForm[ {0.0, 0.0, 0.0}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"DeltaXbar =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"0.`\\\"}, {\\\"0.`\\\"}, {\\\"0.`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "DeltaXbar =``", 
+        MatrixForm[ {0.0, 0.0, 0.0}]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      Rotate\ to\ Earth - 
+        based\ calculation\ frame\ where\ separation\ vector\ points\ in\ the\
+\ z - direction\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(If\ \ \
+[StringTake[detectorPair, {1}] == 
+        StringTake[detectorPair, {2}], \[IndentingNewLine]beta = 
+        0, \[IndentingNewLine] (*\ else\ *) \[IndentingNewLine]beta\  = \ 
+        ArcTan[DeltaXbar[\([1]\)]/
+            DeltaXbar[\([3]\)]]\[IndentingNewLine]]\)\(\[IndentingNewLine]\)\(\
+\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<beta=`` degrees\>", 
+          N[beta*180/Pi]]];\)\(\[IndentingNewLine]\)
+    \(Rot2 = {{Cos[beta], \ 0, \ \(-Sin[beta]\)}, \ {0, \ 1, \ 
+            0}, \ {Sin[beta], \ 0, \ 
+            Cos[beta]}};\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(x1prime\  = \ Rot2 . x1bar;\)\(\[IndentingNewLine]\)
+    \(u1prime\  = \ Rot2 . u1bar;\)\(\[IndentingNewLine]\)
+    \(v1prime\  = \ Rot2 . v1bar;\)\(\[IndentingNewLine]\)
+    \(d1prime\  = \ \((Outer[Times, \ u1prime, \ u1prime]\  - 
+              Outer[Times, \ v1prime, \ v1prime])\)/
+          2;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(x2prime\  = \ Rot2 . x2bar;\)\(\[IndentingNewLine]\)
+    \(u2prime\  = \ Rot2 . u2bar;\)\(\[IndentingNewLine]\)
+    \(v2prime\  = \ Rot2 . v2bar;\)\(\[IndentingNewLine]\)
+    \(d2prime\  = \ \((Outer[Times, \ u2prime, \ u2prime]\  - 
+              Outer[Times, \ v2prime, \ v2prime])\)/
+          2;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(DeltaXprime\  = \ 
+        x1prime - x2prime;\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<x1prime =``\>", 
+          MatrixForm[N[x1prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<u1prime =``\>", 
+          MatrixForm[N[u1prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<v1prime =``\>", 
+          MatrixForm[N[v1prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<d1prime =``\>", 
+          MatrixForm[N[d1prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<x2prime =``\>", 
+          MatrixForm[N[x2prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<u2prime =``\>", 
+          MatrixForm[N[u2prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<v2prime =``\>", 
+          MatrixForm[N[v2prime]]]];\)\(\[IndentingNewLine]\)
+    \(Print[StringForm["\<d2prime =``\>", MatrixForm[N[d2prime]]]]; 
+    Print[StringForm["\<DeltaXprime =``\>", 
+        MatrixForm[
+          N[DeltaXprime]]]];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\
+ (*\ set\ x, y - components\ of\ DeltaXprime\ identically\ to\ zero; \ 
+      were\ non - 
+        zero\ due\ to\ machine\ precision\ *) \)\(\[IndentingNewLine]\)
+    \(DeltaXprime[\([1]\)] = 0;\)\(\[IndentingNewLine]\)
+    \(DeltaXprime[\([2]\)] = 0;\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<DeltaXprime =``\>", 
+          MatrixForm[
+            N[DeltaXprime]]]];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\
+
+    \( (*\ compare\ with\ Allen - Ottewill\ Eq . \ 6.6\ *) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(0\)], "Output"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"beta=\\!\\(0.`\\) degrees\"\>",
+      StringForm[ "beta=`` degrees", 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x1prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x1prime =``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u1prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u1prime =``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v1prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v1prime =``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d1prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d1prime =``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"x2prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"4.546374099002599`*^6\\\"}, {\\\"842989.6976263338`\\\
+\"}, {\\\"4.378576962409281`*^6\\\"}}, RowSpacings -> 1, ColumnAlignments -> \
+Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "x2prime =``", 
+        MatrixForm[ {4546374.0990025988, 842989.6976263338, 
+          4378576.9624092812}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"u2prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.7004582147896785`\\)}, \
+{\\\"0.20848948618767274`\\\"}, {\\\"0.6825616627696408`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "u2prime =``", 
+        MatrixForm[ {-0.70045821478967851, 0.20848948618767274, 
+          0.68256166276964081}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"v2prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\(-0.05379255368193178`\\)}, \
+{\\(-0.9690818054858291`\\)}, {\\\"0.24080451707703146`\\\"}}, RowSpacings -> \
+1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "v2prime =``", 
+        MatrixForm[ {-0.053792553681931782, -0.96908180548582912, 
+          0.24080451707703146}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d2prime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*GridBox[{{\\\"0.24387403591735993`\\\", \\(-0.0990837791706072`\\), \
+\\(-0.23257621693788963`\\)}, {\\(-0.0990837791706072`\\), \
+\\(-0.44782583993643726`\\), \\\"0.1878331032701994`\\\"}, \
+{\\(-0.23257621693788963`\\), \\\"0.1878331032701994`\\\", \
+\\\"0.20395180401907723`\\\"}}, RowSpacings -> 1, ColumnSpacings -> 1, \
+ColumnAlignments -> Left] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "d2prime =``", 
+        MatrixForm[ {{
+          0.24387403591735993, -0.099083779170607206, -0.23257621693788963}, \
+{-0.099083779170607206, -0.44782583993643726, 
+          0.18783310327019939}, {-0.23257621693788963, 0.18783310327019939, 
+          0.20395180401907723}}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"DeltaXprime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"0.`\\\"}, {\\\"0.`\\\"}, {\\\"0.`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "DeltaXprime =``", 
+        MatrixForm[ {0.0, 0.0, 0.0}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"DeltaXprime =\\!\\(\\*TagBox[\\((\[NoBreak] \
+\\*TagBox[GridBox[{{\\\"0.`\\\"}, {\\\"0.`\\\"}, {\\\"0.`\\\"}}, RowSpacings \
+-> 1, ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "DeltaXprime =``", 
+        MatrixForm[ {0.0, 0.0, 0.0}]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ calculate\ s_k \((u)\), \ 
+      non - zero\ for\ Abs[k] \[LessEqual] 
+        4\ *) \)\(\[IndentingNewLine]\)\(\(Clear[
+        u];\)\[IndentingNewLine]\[IndentingNewLine]
+    \(omegaPrime\  = \ {Sin[thetaPrime]\ Cos[phiPrime], \ 
+          Sin[thetaPrime]\ Sin[phiPrime], \ 
+          Cos[thetaPrime]};\)\[IndentingNewLine]
+    \(omegaPrimeAB = \ 
+        Outer[Times, \ omegaPrime, \ omegaPrime];\)\[IndentingNewLine]
+    \(omegaPrimeABCD\  = \ 
+        Outer[Times, \ omegaPrime, \ omegaPrime, \ omegaPrime, \ 
+          omegaPrime];\)\[IndentingNewLine]\[IndentingNewLine]
+    For[K = 0, \ 
+      K \[LessEqual] 
+        Lmax, \ \(K++\), \[IndentingNewLine]\[IndentingNewLine]If[
+        K > 4, \ \[IndentingNewLine]s[K, u_] = 
+          0, \[IndentingNewLine]{\  (*\ else\ *) \[IndentingNewLine]Print[
+            StringForm["\<Calculating `` out of ``\>", K, 
+              4]]; \[IndentingNewLine]int\  = \ 
+            Integrate[
+              Exp[Sqrt[\(-1\)]*K*\ phiPrime], \ {phiPrime, \ 0, \ 
+                2*Pi}]; \[IndentingNewLine]intAB\  = \ 
+            Integrate[
+                Exp[Sqrt[\(-1\)]\ *K*\ phiPrime]\ *\ 
+                  omegaPrimeAB, \ {phiPrime, \ 0, \ 
+                  2*Pi}] /. {Cos[thetaPrime] \[Rule] u, \ 
+                Sin[thetaPrime] \[Rule] 
+                  Sqrt[1 - u^2]}; \[IndentingNewLine]intABCD\  = \ 
+            Integrate[
+                Exp[Sqrt[\(-1\)]*K*phiPrime]*omegaPrimeABCD, \ {phiPrime, \ 
+                  0, \ 2*Pi}] /. {Cos[thetaPrime] \[Rule] u, \ 
+                Sin[thetaPrime] \[Rule] 
+                  Sqrt[1 - 
+                      u^2]}; \[IndentingNewLine]\[IndentingNewLine] (*Print[
+              MatrixForm[intAB]]; \ 
+            Print[MatrixForm[
+                intABCD]];*) \[IndentingNewLine]\[IndentingNewLine]M1\  = \ 
+            N[int*\ d1prime . d2prime, 
+              calcPrecision]\ ; \[IndentingNewLine]M2\  = \ 
+            N[d1prime\  . intAB\  . \ d2prime, 
+              calcPrecision]; \[IndentingNewLine]M3\  = \ 
+            N[d1prime\  . \ intABCD\  . \ d2prime, 
+              calcPrecision]; \[IndentingNewLine]\[IndentingNewLine]s[K, 
+              u_] = \ FullSimplify[
+              2*Tr[M1]\  - \ 4*Tr[M2]\  + \ Tr[M3[\([1, 1]\)]]\  + \ 
+                Tr[M3[\([2, 2]\)]]\  + \ 
+                Tr[M3[\([3, 
+                      3]\)]]];\[IndentingNewLine]}\[IndentingNewLine]]\
+\[IndentingNewLine]\[IndentingNewLine]]\[IndentingNewLine]\[IndentingNewLine] \
+(*\ calculate\ s_k \((u)\)\ for\ negative\ k\ *) \[IndentingNewLine]
+    For[K = \(-1\), \ 
+      K >= \(-Lmax\), \ \(K--\), \[IndentingNewLine]\(s[K, u_]\  = \ 
+          Conjugate[s[\(-K\), u]];\)\[IndentingNewLine]]\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(4\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 4],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(4\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 4],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(4\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 4],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(4\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 4],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(4\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 4],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ display\ non - zero\ s_k \((u)\), \ 
+      compare\ with\ Allen - Ottewill, \ between\ Eqs . \ 8.3, \ 
+      8.4\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(For[
+      K = \(-4\), \ 
+      K \[LessEqual] 
+        4, \ \(K++\), \[IndentingNewLine]\(Print[
+          StringForm["\<s``[u]=``\>", \ K, \ 
+            N[s[K, u]]]];\)\[IndentingNewLine]]\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(-4\\)[u]=\\!\\(\\(\\((\\(\\(0.\
+17246492967220478`\[InvisibleSpace]\\)\\) + \\(\\(0.10765647051229436`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ \\((\\(\\(1.`\[InvisibleSpace]\\)\\) - \
+\\(\\(1.`\\\\ \\(Conjugate[u]\\)\\^2\\)\\))\\)\\^2\\)\"\>",
+      StringForm[ "s``[u]=``", -4, 
+        Times[ 
+          Complex[ 0.17246492967220478, 0.10765647051229436], 
+          Power[ 
+            Plus[ 1.0, 
+              Times[ -1.0, 
+                Power[ 
+                  Conjugate[ u], 2]]], 2]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(-3\\)[u]=\\!\\(\\(\\((\\(\\(-0.\
+3884595430390755`\\)\\) - \\(\\(0.5529617611387017`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ \\(\\(Conjugate[\\(\\(u\\\\ \\((\\(\\(1.`\
+\[InvisibleSpace]\\)\\) - \\(\\(1.`\\\\ u\\^2\\)\\))\\)\\^\\(3/2\\)\\)\\)]\\)\
+\\)\\)\"\>",
+      StringForm[ "s``[u]=``", -3, 
+        Times[ 
+          Complex[ -0.38845954303907548, -0.55296176113870166], 
+          Conjugate[ 
+            Times[ u, 
+              Power[ 
+                Plus[ 1.0, 
+                  Times[ -1.0, 
+                    Power[ u, 2]]], 
+                Rational[ 3, 2]]]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(-2\\)[u]=\\!\\(\\(\\((\\(\\(0.\
+5466035452562603`\[InvisibleSpace]\\)\\) - \\(\\(0.3585094548355854`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\) + \
+\\(\\(Conjugate[\\(\\(\\(\\(\\(\\((\\(\\(0.23637873427739992`\[InvisibleSpace]\
+\\)\\) - \\(\\(1.0979366829734745`\\\\ \[ImaginaryI]\\)\\))\\)\\)\\\\ \
+u\\^2\\)\\) - \\(\\(\\(\\((\\(\\(0.7829822795336603`\[InvisibleSpace]\\)\\) - \
+\\(\\(0.7394272281378891`\\\\ \[ImaginaryI]\\)\\))\\)\\)\\\\ \
+u\\^4\\)\\)\\)\\)]\\)\\)\\)\"\>",
+      StringForm[ "s``[u]=``", -2, 
+        Plus[ 
+          Complex[ 0.54660354525626031, -0.35850945483558538], 
+          Conjugate[ 
+            Plus[ 
+              Times[ 
+                Complex[ 0.23637873427739992, -1.0979366829734745], 
+                Power[ u, 2]], 
+              Times[ 
+                Complex[ -0.78298227953366029, 0.73942722813788908], 
+                Power[ u, 4]]]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(-1\\)[u]=\\!\\(\\(\\((\\(\\((\\(\\(2.\
+7611210827759174`\[InvisibleSpace]\\)\\) - \\(\\(0.06802119212842182`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\) - \\(\\(\\(\\((\\(\\(0.2717812735962139`\
+\[InvisibleSpace]\\)\\) + \\(\\(0.9854814078631623`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ \\(Conjugate[u]\\)\\^2\\)\\))\\)\\)\\\\ \
+\\(\\(Conjugate[\\(\\(u\\\\ \\@\\(\\(\\(1.`\[InvisibleSpace]\\)\\) + \
+\\(\\(0.`\\\\ u\\)\\) - \\(\\(1.`\\\\ u\\^2\\)\\)\\)\\)\\)]\\)\\)\\)\"\>",
+      StringForm[ "s``[u]=``", -1, 
+        Times[ 
+          Plus[ 
+            Complex[ 2.7611210827759174, -0.068021192128421823], 
+            Times[ 
+              Complex[ -0.2717812735962139, -0.9854814078631623], 
+              Power[ 
+                Conjugate[ u], 2]]], 
+          Conjugate[ 
+            Times[ u, 
+              Power[ 
+                Plus[ 1.0, 
+                  Times[ 0.0, u], 
+                  Times[ -1.0, 
+                    Power[ u, 2]]], 
+                Rational[ 1, 2]]]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(0\\)[u]=\\!\\(\\(\\(2.117763890557961`\
+\[InvisibleSpace]\\)\\) + \\(\\(1.2635850199659067`\\\\ u\\^2\\)\\) - \
+\\(\\(0.12842387170714506`\\\\ u\\^4\\)\\)\\)\"\>",
+      StringForm[ "s``[u]=``", 0, 
+        Plus[ 2.1177638905579612, 
+          Times[ 1.2635850199659067, 
+            Power[ u, 2]], 
+          Times[ -0.12842387170714506, 
+            Power[ u, 4]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(1\\)[u]=\\!\\(u\\\\ \\@\\(\\(\\(1.`\
+\[InvisibleSpace]\\)\\) + \\(\\(0.`\\\\ u\\)\\) - \\(\\(1.`\\\\ \
+u\\^2\\)\\)\\)\\\\ \
+\\(\\((\\(\\((\\(\\(2.7611210827759174`\[InvisibleSpace]\\)\\) + \
+\\(\\(0.06802119212842182`\\\\ \[ImaginaryI]\\)\\))\\)\\) - \
+\\(\\(\\(\\((\\(\\(0.2717812735962139`\[InvisibleSpace]\\)\\) - \
+\\(\\(0.9854814078631623`\\\\ \[ImaginaryI]\\)\\))\\)\\)\\\\ \
+u\\^2\\)\\))\\)\\)\\)\"\>",
+      StringForm[ "s``[u]=``", 1, 
+        Times[ u, 
+          Power[ 
+            Plus[ 1.0, 
+              Times[ 0.0, u], 
+              Times[ -1.0, 
+                Power[ u, 2]]], 
+            Rational[ 1, 2]], 
+          Plus[ 
+            Complex[ 2.7611210827759174, 0.068021192128421823], 
+            Times[ 
+              Complex[ -0.2717812735962139, 0.9854814078631623], 
+              Power[ u, 2]]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(2\\)[u]=\\!\\(\\(\\((\\(\\(0.\
+5466035452562603`\[InvisibleSpace]\\)\\) + \\(\\(0.3585094548355854`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\) + \\(\\(\\(\\((\\(\\(0.23637873427739992`\
+\[InvisibleSpace]\\)\\) - \\(\\(1.0979366829734745`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ u\\^2\\)\\) - \
+\\(\\(\\(\\((\\(\\(0.7829822795336603`\[InvisibleSpace]\\)\\) - \
+\\(\\(0.7394272281378891`\\\\ \[ImaginaryI]\\)\\))\\)\\)\\\\ u\\^4\\)\\)\\)\"\
+\>",
+      StringForm[ "s``[u]=``", 2, 
+        Plus[ 
+          Complex[ 0.54660354525626031, 0.35850945483558538], 
+          Times[ 
+            Complex[ 0.23637873427739992, -1.0979366829734745], 
+            Power[ u, 2]], 
+          Times[ 
+            Complex[ -0.78298227953366029, 0.73942722813788908], 
+            Power[ u, 4]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(3\\)[u]=\\!\\(\\(\\((\\(\\(-0.\
+3884595430390755`\\)\\) + \\(\\(0.5529617611387017`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ u\\\\ \\((\\(\\(1.`\[InvisibleSpace]\\)\\) - \
+\\(\\(1.`\\\\ u\\^2\\)\\))\\)\\^\\(3/2\\)\\)\"\>",
+      StringForm[ "s``[u]=``", 3, 
+        Times[ 
+          Complex[ -0.38845954303907548, 0.55296176113870166], u, 
+          Power[ 
+            Plus[ 1.0, 
+              Times[ -1.0, 
+                Power[ u, 2]]], 
+            Rational[ 3, 2]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"s\\!\\(4\\)[u]=\\!\\(\\(\\((\\(\\(0.\
+17246492967220478`\[InvisibleSpace]\\)\\) - \\(\\(0.10765647051229436`\\\\ \
+\[ImaginaryI]\\)\\))\\)\\)\\\\ \\((\\(\\(1.`\[InvisibleSpace]\\)\\) - \
+\\(\\(1.`\\\\ u\\^2\\)\\))\\)\\^2\\)\"\>",
+      StringForm[ "s``[u]=``", 4, 
+        Times[ 
+          Complex[ 0.17246492967220478, -0.10765647051229436], 
+          Power[ 
+            Plus[ 1.0, 
+              Times[ -1.0, 
+                Power[ u, 2]]], 2]]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      extract\ coefficients\ a[k, 
+            N]\ of\ s_k \((u)\)\ defined\ by\[IndentingNewLine]s_k \((u)\)\  \
+= \ \((1 - u^2)\)^\((\(|\)\(k\)\(|\)\(\(/\)\(2\)\))\) 
+          sum_ {N = 0}^{\(\(4\)\(-\)\) | k | }\ a[k, 
+            N]\ \(\(u^
+              N\)\(.\)\)\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\
+\(For[K = 0, \ 
+      K \[LessEqual] Lmax, \ \(K++\), \[IndentingNewLine]For[NN = 0, \ 
+        NN \[LessEqual] 4 - Abs[K], \ \(NN++\), \[IndentingNewLine]a[K, NN] = 
+          D[s[K, u]/\((1 - u^2)\)^\((Abs[K]/2)\), {u, NN}]/\((Factorial[
+                  NN])\) /. 
+            u \[Rule] 0; \[IndentingNewLine] (*\(Print[
+              StringForm["\<a````=``\>", K, NN, \ 
+                N[a[K, NN]]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]\[IndentingNewLine]
+    For[K = \(-1\), \ 
+      K >= \(-Lmax\), \ \(K--\), \[IndentingNewLine]For[NN = 0, \ 
+        NN \[LessEqual] 
+          4 - Abs[K], \ \(NN++\), \[IndentingNewLine]a[K, NN]\  = \ 
+          Conjugate[
+            a[\(-K\), NN]]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<a````=``\>", K, NN, \ 
+                N[a[K, NN]]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\)\
+\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      extract\ coefficients\ b[K, N, r, 
+          M]\ of\ the\ polynomials\ that\ appear\ in\ the\ expansion\ of\ the\
+\ derivative\ of\ Exp[ixu] \((1 - u^2)\)^k\ u^
+          N\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(Clear[u, 
+        x];\)\(\[IndentingNewLine]\)
+    \(For[K = 0, \ 
+      K \[LessEqual] 
+        Lmax, \ \(K++\), \[IndentingNewLine]\[IndentingNewLine]For[NN = 0, \ 
+        NN <= 4 - 
+            Abs[K], \ \(NN++\), \
+\[IndentingNewLine]\[IndentingNewLine]polytemp[K, NN, \ x_]\  = \ 
+          FullSimplify[
+            Exp[\(-Sqrt[\(-1\)]\)*x*u]*
+              D[Exp[Sqrt[\(-1\)]*\ x*\ u]\ \((1 - u^2)\)^K\ u^NN, \ {u, 
+                  K}]]; \[IndentingNewLine]\ \  (*\(Print[
+              StringForm["\<poly````[u,x]=``\>", K, NN, \ 
+                polytemp[K, NN, 
+                  x]]];\)*) \[IndentingNewLine]\[IndentingNewLine]For[
+          r = 0, \ r \[LessEqual] 
+            K, \ \(r++\), \[IndentingNewLine]\[IndentingNewLine]poly[K, NN, 
+              r] = \ D[
+                  polytemp[K, NN, \ x], {x, 
+                    r}]/\((Sqrt[\(-1\)]^r\ Factorial[r])\) /. 
+              x \[Rule] 0; \[IndentingNewLine] (*\(Print[
+                StringForm["\<poly``````=``\>", K, NN, r, 
+                  poly[K, NN, 
+                    r]]];\)*) \[IndentingNewLine]\[IndentingNewLine]poly[K, 
+              NN, r] = 
+            Expand[poly[K, NN, r]]; \[IndentingNewLine] (*\(Print[
+                StringForm["\<poly``````=``\>", K, NN, r, 
+                  poly[K, NN, 
+                    r]]];\)*) \[IndentingNewLine]\[IndentingNewLine]For[
+            MM = 0, \ 
+            MM \[LessEqual] 
+              K + NN + r, \ \(MM++\), \[IndentingNewLine]b[K, NN, r, 
+                MM]\  = \ 
+              D[poly[K, NN, r], {u, \ MM}]/\((Factorial[MM])\) /. 
+                u \[Rule] 0; \[IndentingNewLine] (*\(Print[
+                  StringForm["\<b````````=``\>", K, NN, r, MM, 
+                    b[K, NN, r, 
+                      MM]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]]\)\(\[IndentingNewLine]\)\(\
+\[IndentingNewLine]\)
+    \( (*\ see\ Allen - Ottewill, \ Eqs . \ A5, \ 
+      A6\ with\ Exp[iux]\ factored\ out\ *) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      define\ substitution\ for\ derivatives\ of\ spherical\ bessel\ \
+functions\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(Clear[
+        x];\)\[IndentingNewLine]
+    For[L = \(-\((Lmax + 4)\)\), \ 
+      L \[LessEqual] 
+        2*Lmax + 4, \ \(L++\), \[IndentingNewLine]\(djsub[L] = 
+          D[j[L, x_], 
+              x_] \[Rule] \((L/\((2*L + 1)\))\)\ *\ 
+                j[L - 1, x]\  - \ \((\((L + 1)\)/\((2*L + 1)\))\)*
+                j[L + 1, 
+                  x];\)\[IndentingNewLine]]\[IndentingNewLine]\
+\[IndentingNewLine]
+    \(dsphericalBesselJsubstitution = 
+        Table[djsub[i], {i, \(-\((Lmax + 4)\)\), 
+            2*Lmax + 4}];\)\[IndentingNewLine]
+    \)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ calculate\ JLM\ integral, \ 
+      Allen - Ottewill\ Eq . \ 
+            A7\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(Clear[
+        x];\)\(\[IndentingNewLine]\)
+    \(For[L = 0, \ 
+      L \[LessEqual] 
+        Lmax, \ \(L++\), \[IndentingNewLine]\[IndentingNewLine]Print[
+        StringForm["\<Calculating `` out of ``\>", L, \ 
+          Lmax]]; \[IndentingNewLine]\[IndentingNewLine]MM = 
+        0; \[IndentingNewLine]JJ[MM, \ L, \ 
+          x_]\  = \ \((2\ Sqrt[\(-1\)]^L)\)\ *\ 
+          j[L, x]; \[IndentingNewLine] (*\(Print[
+            StringForm["\<J^``_``=``\>", MM, \ L, \ 
+              JJ[MM, L, x]]];\)*) \[IndentingNewLine]\[IndentingNewLine]For[
+        MM = 1, \ 
+        MM \[LessEqual] 
+          Lmax + 4, \ \(MM++\), \[IndentingNewLine]JJ[MM, L, x_]\  = \ 
+          Simplify[\((\(-Sqrt[\(-1\)]\))\) D[JJ[MM - 1, L, x], x] //. 
+              dsphericalBesselJsubstitution]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<J^``_``[x]=``\>", MM, L, \ 
+                JJ[MM, L, 
+                  x]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\)\(\
+\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      display\ a\ few\ JLM' 
+        s\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<J^0_0[x]=``\>", JJ[0, 0, x]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<J^1_0[x]=``\>", JJ[1, 0, x]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<J^1_1[x]=``\>", JJ[1, 1, x]]];\)\(\[IndentingNewLine]\)
+    \(Print[
+        StringForm["\<J^2_1[x]=``\>", 
+          JJ[2, 1, 
+            x]]];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      See\ Allen - Ottewill, \ 
+      Eqs . \ A7 - \(\(A11\)\(.\)\)\ *) \)\(\[IndentingNewLine]\)
+    \( (*\ The\ expressions\ after\ Eq . \ 
+          A11\ are\ missing\ a\ factor\ of\ 2 
+         i^L\ \((\(-i\))\)^M\ *) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(5\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 5, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(6\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 6, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(7\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 7, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(8\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 8, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(9\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 9, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(11\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 11, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(12\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 12, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(13\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 13, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(14\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 14, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(15\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 15, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(16\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 16, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(17\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 17, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(18\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 18, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(19\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 19, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(21\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 21, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(22\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 22, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(23\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 23, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(24\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 24, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(25\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 25, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(26\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 26, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(27\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 27, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(28\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 28, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(29\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 29, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"J^0_0[x]=\\!\\(2\\\\ \\(\\(j[\\(\\(0, \
+x\\)\\)]\\)\\)\\)\"\>",
+      StringForm[ "J^0_0[x]=``", 
+        Times[ 2, 
+          j[ 0, x]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"J^1_0[x]=\\!\\(2\\\\ \[ImaginaryI]\\\\ \\(\\(j[\\(\
+\\(1, x\\)\\)]\\)\\)\\)\"\>",
+      StringForm[ "J^1_0[x]=``", 
+        Times[ 
+          Complex[ 0, 2], 
+          j[ 1, x]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"J^1_1[x]=\\!\\(2\\/3\\\\ \\(\\((\\(\\(j[\\(\\(0, x\
+\\)\\)]\\)\\) - \\(\\(2\\\\ \\(\\(j[\\(\\(2, x\\)\\)]\\)\\)\\)\\))\\)\\)\\)\"\
+\>",
+      StringForm[ "J^1_1[x]=``", 
+        Times[ 
+          Rational[ 2, 3], 
+          Plus[ 
+            j[ 0, x], 
+            Times[ -2, 
+              j[ 2, x]]]]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"J^2_1[x]=\\!\\(2\\/5\\\\ \[ImaginaryI]\\\\ \\(\\((\
+\\(\\(3\\\\ \\(\\(j[\\(\\(1, x\\)\\)]\\)\\)\\)\\) - \\(\\(2\\\\ \
+\\(\\(j[\\(\\(3, x\\)\\)]\\)\\)\\)\\))\\)\\)\\)\"\>",
+      StringForm[ "J^2_1[x]=``", 
+        Times[ 
+          Complex[ 0, 
+            Rational[ 2, 5]], 
+          Plus[ 
+            Times[ 3, 
+              j[ 1, x]], 
+            Times[ -2, 
+              j[ 3, x]]]]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ calculate\ ILKN\ integral, \ 
+      see\ Allen - 
+        Ottewill\ Eq . \ A5\ including\ normalisation\ factor\ Eq . \ 
+            7.9\ *) \)\(\[IndentingNewLine]\)\(\(Clear[
+        x];\)\[IndentingNewLine]\[IndentingNewLine]
+    For[L = 0, \ 
+      L \[LessEqual] Lmax, \(L++\), \[IndentingNewLine]Print[
+        StringForm["\<Calculating `` out of ``\>", L, \ 
+          Lmax]]; \[IndentingNewLine]\[IndentingNewLine]For[K = 0, \ 
+        K \[LessEqual] 
+          L, \ \(K++\), \[IndentingNewLine]\[IndentingNewLine]Normfactor[L, 
+            K] = Sqrt[\((\((2\ L\  + \ 1)\)/\((4\ Pi)\))\)\ *\((Factorial[
+                    L - K]/Factorial[
+                    L + K])\)]; \[IndentingNewLine]\[IndentingNewLine]For[
+          NN = 0, \ 
+          NN <= 4 - 
+              Abs[K], \ \(NN++\), \[IndentingNewLine]\[IndentingNewLine]II[L, 
+              K, NN, \ x_] = 0; \[IndentingNewLine]For[r = 0, \ 
+            r \[LessEqual] 
+              K, \ \(r++\), \[IndentingNewLine]\[IndentingNewLine]sumM[L, \ 
+                K, NN, r, \ x_] = 0; \[IndentingNewLine]For[MM = 0, \ 
+              MM \[LessEqual] 
+                K + NN + 
+                  r, \ \(MM++\), \[IndentingNewLine]\(sumM[L, \ K, \ NN, \ 
+                    r, \ x_] = \ 
+                  sumM[L, K, NN, r, x] + 
+                    b[K, NN, r, MM]*
+                      JJ[MM, \ L, \ 
+                        x];\)\[IndentingNewLine]]; \[IndentingNewLine]\
+\[IndentingNewLine]II[L, K, NN, \ x_] = 
+              II[L, K, NN, x]\  + \ 
+                Normfactor[L, K] \((Sqrt[\(-1\)]\ x)\)^r\ sumM[L, K, NN, r, \ 
+                    x];\[IndentingNewLine]]; \[IndentingNewLine]\
+\[IndentingNewLine] (*\ 
+            assign\ values\ for\ negative\ K\ *) \[IndentingNewLine]If[
+            K > 0, \[IndentingNewLine]II[L, \(-K\), \ NN, \ 
+                x_] = \ \((\(-1\))\)^K\ II[L, K, NN, 
+                  x]\[IndentingNewLine]]; \[IndentingNewLine]\
+\[IndentingNewLine] (*\(Print[
+                StringForm["\<N=``, I^``_``[x]=``\>", NN, K, L, 
+                  Simplify[
+                    II[L, K, NN, 
+                      x]]]];\)*) \[IndentingNewLine]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]]\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(5\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 5, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(6\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 6, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(7\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 7, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(8\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 8, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(9\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 9, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(11\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 11, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(12\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 12, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(13\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 13, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(14\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 14, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(15\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 15, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(16\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 16, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(17\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 17, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(18\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 18, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(19\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 19, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(21\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 21, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(22\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 22, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(23\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 23, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(24\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 24, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(25\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 25, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(26\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 26, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(27\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 27, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(28\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 28, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(29\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 29, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 30],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      calculate\ rotation\ matrix\ components\ dLMK, \ 
+      see\ Allen - 
+        Ottewill\ Eq . \ 
+            7.6\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(beta \
+= N[beta, calcPrecision];\)\[IndentingNewLine]\[IndentingNewLine]
+    For[L = 0, \ 
+      L \[LessEqual] 
+        Lmax, \ \(L++\), \[IndentingNewLine]\[IndentingNewLine]Print[
+        StringForm["\<Calculating `` out of ``\>", L, \ 
+          Lmax]]; \[IndentingNewLine]\[IndentingNewLine]For[M = 0, \ 
+        M \[LessEqual] L, \ \(M++\), \[IndentingNewLine]For[K = \(-L\), \ 
+          K \[LessEqual] 
+            L, \ \(K++\), \[IndentingNewLine]\[IndentingNewLine]If\ [
+            beta \[Equal] 0, \[IndentingNewLine]If[\ 
+              K \[Equal] M, \[IndentingNewLine]d[L, M, K] = 
+                1, \[IndentingNewLine]d[L, M, K] = 
+                0], \[IndentingNewLine]\[IndentingNewLine]\((%\ else\ %)\)\
+\[IndentingNewLine]{\[IndentingNewLine]q = 
+                  Min[L + K, L - K, L + M, 
+                    L - M]; \[IndentingNewLine]\[IndentingNewLine]Which[\
+\[IndentingNewLine]q \[Equal] 
+                    L + K, \[IndentingNewLine]d[L, M, 
+                      K] = \ \((\(-1\))\)^\((M - 
+                            K)\)\ Sqrt[\((Factorial[L - K] 
+                              Factorial[L + K])\)/\((Factorial[L + M] 
+                              Factorial[L - M])\)] \((Sin[beta/2])\)^\((M - 
+                            K)\)\ \((Cos[beta/2])\)^\((\(-M\) - 
+                            K)\)\ \ \ JacobiP[L + K, M - K, \(-M\) - K, \ 
+                        Cos[beta]], \[IndentingNewLine]\[IndentingNewLine]q \
+\[Equal] L - K, \[IndentingNewLine]d[L, M, K] = \ 
+                    Sqrt[\((Factorial[L + K] 
+                              Factorial[L - K])\)/\((Factorial[L + M] 
+                              Factorial[L - M])\)] \((Sin[beta/2])\)^\((K - 
+                            M)\)\ \((Cos[beta/2])\)^\((M + 
+                            K)\)\ \ \ \ JacobiP[L - K, K - M, M + K, \ 
+                        Cos[beta]], \[IndentingNewLine]\[IndentingNewLine]q \
+\[Equal] L + M, \[IndentingNewLine]d[L, M, K] = \ 
+                    Sqrt[\((Factorial[L - M] 
+                              Factorial[L + M])\)/\((Factorial[L + K] 
+                              Factorial[L - K])\)] \((Sin[beta/2])\)^\((K - 
+                            M)\)\ \((Cos[beta/2])\)^\((\(-K\) - 
+                            M)\)\ \ \ \ JacobiP[L + M, K - M, \(-K\) - M, \ 
+                        Cos[beta]], \[IndentingNewLine]\[IndentingNewLine]q \
+\[Equal] L - M, \[IndentingNewLine]d[L, M, 
+                      K] = \ \((\(-1\))\)^\((M - 
+                            K)\)\ \ Sqrt[\((Factorial[L + M] 
+                              Factorial[L - M])\)/\((Factorial[L + K] 
+                              Factorial[L - K])\)] \((Sin[beta/2])\)^\((M - 
+                            K)\)\ \((Cos[beta/2])\)^\((K + M)\)\ \ \ JacobiP[
+                        L - M, M - K, K + M, \ 
+                        Cos[beta]]\[IndentingNewLine]\[IndentingNewLine]]\
+\[IndentingNewLine]}\[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]]\[IndentingNewLine]\[IndentingNewLine]\
+ (*\ display\ a\ few\ dLMK' s\ *) \[IndentingNewLine]\[IndentingNewLine]
+    For[L = 0, \ 
+      L \[LessEqual] 1, \ \(L++\), \[IndentingNewLine]For[M = 0, 
+        M \[LessEqual] L, \ \(M++\), \[IndentingNewLine]For[K = \(-L\), 
+          K \[LessEqual] 
+            L, \ \(K++\), \[IndentingNewLine]\ \(Print[
+              StringForm["\<d``````=``\>", L, M, K, 
+                N[d[L, M, 
+                    K]]]];\)\ \ \[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]
+    \)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(5\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 5, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(6\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 6, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(7\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 7, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(8\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 8, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(9\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 9, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(11\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 11, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(12\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 12, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(13\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 13, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(14\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 14, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(15\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 15, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(16\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 16, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(17\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 17, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(18\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 18, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(19\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 19, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(21\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 21, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(22\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 22, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(23\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 23, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(24\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 24, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(25\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 25, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(26\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 26, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(27\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 27, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(28\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 28, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(29\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 29, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(0\\)\\!\\(0\\)\\!\\(0\\)=\\!\\(1.`\\)\"\>",
+      StringForm[ "d``````=``", 0, 0, 0, 1.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(0\\)\\!\\(-1\\)=\\!\\(0.`\\)\"\>",
+      
+      StringForm[ "d``````=``", 1, 0, -1, 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(0\\)\\!\\(0\\)=\\!\\(1.`\\)\"\>",
+      StringForm[ "d``````=``", 1, 0, 0, 1.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(0\\)\\!\\(1\\)=\\!\\(0.`\\)\"\>",
+      StringForm[ "d``````=``", 1, 0, 1, 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(1\\)\\!\\(-1\\)=\\!\\(0.`\\)\"\>",
+      
+      StringForm[ "d``````=``", 1, 1, -1, 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(1\\)\\!\\(0\\)=\\!\\(0.`\\)\"\>",
+      StringForm[ "d``````=``", 1, 1, 0, 0.0],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"d\\!\\(1\\)\\!\\(1\\)\\!\\(1\\)=\\!\\(1.`\\)\"\>",
+      StringForm[ "d``````=``", 1, 1, 1, 1.0],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      calculate\ INITIAL\ decomposition\ of\ overlapLM[
+          x]\ in\ terms\ of\ spherical\ bessel\ functions\ *) \)\(\
+\[IndentingNewLine]\)\(\(Clear[x];\)\[IndentingNewLine]\[IndentingNewLine]
+    For[L = 0, \ 
+      L \[LessEqual] \ Lmax, \ \(L++\), \[IndentingNewLine]Print[
+        StringForm["\<Calculating `` out of ``\>", L, \ 
+          Lmax]]; \[IndentingNewLine]For[M = 0, \ 
+        M \[LessEqual] 
+          L, \ \(M++\), \[IndentingNewLine]\[IndentingNewLine]overlap[L, M, \ 
+            x_] = 0; \[IndentingNewLine]For[K = \(-L\), \ 
+          K \[LessEqual] 
+            L, \ \(K++\), \ \[IndentingNewLine]\[IndentingNewLine]sumN[L, 
+              K, \ x_] = 0; \[IndentingNewLine]For[NN = 0, \ 
+            NN <= 4 - 
+                Abs[K], \ \(NN++\), \[IndentingNewLine]\(sumN[L, K, 
+                  x_] = \ \ sumN[L, K, \ x]\  + 
+                  a[K, NN]\ *\ 
+                    II[L, K, \ NN, 
+                      x];\)\[IndentingNewLine]]; \[IndentingNewLine]\
+\[IndentingNewLine]overlap[L, M, x_] = 
+            overlap[L, M, \ x]\  + \ \ \((5/\((8*Pi)\))\)\ *\ d[L, M, K]*
+                sumN[L, K, 
+                  x];\[IndentingNewLine]\[IndentingNewLine]]; \
+\[IndentingNewLine]\[IndentingNewLine]overlap[L, M, x_] = 
+          Simplify[
+            overlap[L, M, x]]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<overlap````[x]=``\>", L, M, \ 
+                N[overlap[L, M, 
+                    x]]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]
+    \)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(5\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 5, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(6\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 6, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(7\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 7, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(8\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 8, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(9\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 9, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(11\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 11, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(12\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 12, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(13\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 13, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(14\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 14, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(15\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 15, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(16\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 16, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(17\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 17, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(18\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 18, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(19\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 19, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(21\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 21, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(22\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 22, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(23\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 23, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(24\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 24, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(25\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 25, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(26\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 26, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(27\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 27, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(28\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 28, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(29\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 29, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 30],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      define\ spherical\ bessel\ function\ substitutions\ *) \)\(\
+\[IndentingNewLine]\)\(\(Clear[
+        x];\)\[IndentingNewLine]\[IndentingNewLine] (*\ 
+      note\ that\ Lmax + 4\  = \ max\ value\ of\ MM\ *) \[IndentingNewLine]
+    For[L = 0, \ 
+      L \[LessEqual] 2*Lmax + 4, \ \(L++\), \[IndentingNewLine] (*\ 
+        construct\ spherical\ bessel\ functions\ of\ the\ 3  
+            rd\ kind\ h1[n, x]\ for\ n \[GreaterEqual] 
+          0\ *) \[IndentingNewLine]h1[L] = 0; \[IndentingNewLine]For[K = 0, \ 
+        K \[LessEqual] 
+          L, \ \(K++\), \[IndentingNewLine]\(h1[L] = 
+            h1[L]\  + \ 
+              Factorial[
+                    L + K]/\((Factorial[K]\ Gamma[L - K + 1])\)*\((\(-2\)*
+                      Sqrt[\(-1\)]*
+                      x)\)^\((\(-K\))\);\)\[IndentingNewLine]]; \
+\[IndentingNewLine]h1[L]\  = \ 
+        Sqrt[\(-1\)]^\((\(-L\) - 1)\)*x^\((\(-1\))\)*Exp[Sqrt[\(-1\)]\ x]*
+          h1[L]; \[IndentingNewLine]\[IndentingNewLine] (*\ 
+        spherical\ bessel\ function\ j[n, x]\ is\ real\ part\ of\ h1[n, 
+            x]\ *) \[IndentingNewLine]jsub[L] = 
+        j[L, x_] \[Rule] 
+          Re[h1[L]]; \[IndentingNewLine]\[IndentingNewLine] (*\(Print[
+            StringForm["\<j``[x]=``\>", L, \ 
+              ComplexExpand[
+                Re[h1[L]]]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]\
+\[IndentingNewLine]
+    \(sphericalBesselJsubstitution = 
+        Table[jsub[i], {i, 0, 2*Lmax + 4}];\)\)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      extract\ coefficients\ of\ polynomials\ in\ 1/x\ multiplying\ Sin[
+          x]\ and\ Cos[
+          x]\ for\ spherical\ bessel\ functions\ *) \)\(\[IndentingNewLine]\)\
+\(\(Clear[x];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(For[L = 0, 
+      L \[LessEqual] 2*Lmax + 4, \ \(L++\), \[IndentingNewLine]If[
+        Mod[L, 10] \[Equal] 0, 
+        Print[StringForm["\<Calculating `` out of ``\>", L, 
+            2*\ Lmax + 4]]]; \[IndentingNewLine]\[IndentingNewLine]poly[x_] = 
+        ExpandAll[ComplexExpand[Re[h1[L]]]] //. {Cos[x] \[Rule] 1, 
+            Sin[x] \[Rule] 1}; \[IndentingNewLine]\[IndentingNewLine]Clear[
+        r]; \[IndentingNewLine]rMax = L + 1; \[IndentingNewLine]For[r = rMax, 
+        r \[GreaterEqual] 1, \ \(r--\), \[IndentingNewLine]pp[x_] = 
+          Expand[x^rMax\ poly[x]]; \[IndentingNewLine]polyJCoeff[L, 
+            r] = \((D[pp[x], {x, rMax - r}]/Factorial[rMax - r])\)\  /. 
+            x \[Rule] 
+              0;\[IndentingNewLine]]\[IndentingNewLine]]\)\(\
+\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      display\ *) \)\(\[IndentingNewLine]\)
+    \( (*\[IndentingNewLine]For[L = 0, \ 
+        L \[LessEqual] Lmax, \ \(L++\), \[IndentingNewLine]Print[
+          StringForm["\<j``[x]=``\>", L, 
+            ExpandAll[ComplexExpand[Re[h1[L]]]]]]; \[IndentingNewLine]rMax = 
+          L + 1; \[IndentingNewLine]For[r = rMax, \ 
+          r \[GreaterEqual] 
+            1, \ \(r--\), \[IndentingNewLine]\(Print[
+              StringForm["\<j````=``\>", L, r, 
+                polyJCoeff[L, 
+                  r]]];\)\[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]*) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(40\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 40, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(50\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 50, 64],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(60\\) out of \\!\\(64\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 60, 64],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\( (*\ 
+      extract\ coefficients\ of\ polynomials\ in\ 1/x\ multiplying\ Sin[
+          x]\ and\ Cos[
+          x]\ for\ overlap\ reduction\ function\ *) \)\(\[IndentingNewLine]\)\
+\(\(Clear[x];\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)
+    \(For[L = 0, \ 
+      L \[LessEqual] Lmax, \ \(L++\), \[IndentingNewLine]Print[
+        StringForm["\<Calculating `` out of ``\>", L, 
+          Lmax]]; \[IndentingNewLine]For[M = 0, \ 
+        M \[LessEqual] 
+          L, \ \(M++\), \[IndentingNewLine]\[IndentingNewLine]ff[x_] = 
+          overlap[L, M, x] //. 
+            sphericalBesselJsubstitution; \[IndentingNewLine]poly[x_] = 
+          ExpandAll[ComplexExpand[ff[x]]] //. {Cos[x] \[Rule] 1, 
+              Sin[x] -> 1}; \[IndentingNewLine]\[IndentingNewLine]Clear[
+          r]; \[IndentingNewLine]rMax = L + 5; \[IndentingNewLine]For[
+          r = rMax, 
+          r \[GreaterEqual] 1, \ \(r--\), \[IndentingNewLine]pp[x_] = 
+            Expand[x^rMax\ poly[x]]; \[IndentingNewLine]polyOverlapCoeff[L, 
+              M, r] = \((D[pp[x], {x, rMax - r}]/Factorial[rMax - r])\)\  /. 
+              x \[Rule] 
+                0;\[IndentingNewLine]]\[IndentingNewLine]]\[IndentingNewLine]]\
+\)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      display\ *) \)\(\[IndentingNewLine]\)
+    \( (*\[IndentingNewLine]For[L = 0, \ 
+        L \[LessEqual] 1, \ \(L++\), \[IndentingNewLine]For[M = 0, \ 
+          M \[LessEqual] L, \ \(M++\), \[IndentingNewLine]Print[
+            StringForm["\<overlap````[x]=``\>", L, M, 
+              ExpandAll[
+                ComplexExpand[
+                  overlap[L, M, x] //. 
+                    sphericalBesselJsubstitution]]]]; \[IndentingNewLine]rMax \
+= L + 5; \[IndentingNewLine]For[r = rMax, \ 
+            r \[GreaterEqual] 
+              1, \ \(r--\), \[IndentingNewLine]\(Print[
+                StringForm["\<overlap``````=``\>", L, M, r, 
+                  N[polyOverlapCoeff[L, M, 
+                      r]]]];\)\[IndentingNewLine]]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]*) \)\)\)\)], "Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(0\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 0, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(1\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 1, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(2\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 2, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(3\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 3, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(4\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 4, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(5\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 5, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(6\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 6, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(7\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 7, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(8\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 8, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(9\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 9, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(10\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 10, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(11\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 11, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(12\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 12, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(13\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 13, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(14\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 14, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(15\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 15, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(16\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 16, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(17\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 17, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(18\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 18, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(19\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 19, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(20\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 20, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(21\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 21, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(22\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 22, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(23\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 23, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(24\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 24, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(25\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 25, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(26\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 26, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(27\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 27, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(28\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 28, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(29\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 29, 30],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"Calculating \\!\\(30\\) out of \\!\\(30\\)\"\>",
+      StringForm[ "Calculating `` out of ``", 30, 30],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      calculate\ coefficients\ of\ an\ alternative\ spherical\ bessel\ \
+function\ decomposition\ of\ the\ overlap\ reduction\ function, \ 
+      as\ in\ Allen - 
+        Ottewill\ after\ Eq . \ 
+            8.4\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      NOTE : \ only\ need\ to\ solve\ the\ matrix\ equation\ for\ the\ \
+polynomial\ coefficients\ multiplying\ Sin[
+            x]\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      OCoeff\  = \ 
+        JMatrix\ *\ 
+          JCoeff\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(For[
+      L = 0, \ L \[LessEqual] Lmax, \ \(L++\), \[IndentingNewLine]For[
+        M = 0, \ M \[LessEqual] 
+          L, \ \(M++\), \[IndentingNewLine]\[IndentingNewLine]matrixDimension\
+\  = \ 2 + Floor[\((L + 2)\)/2]; \[IndentingNewLine]highestN\  = \ 
+          2 + Floor[\((L + 1)\)/
+                2]; \[IndentingNewLine]\[IndentingNewLine] (*\ 
+          construct\ vector\ of\ original\ overlap\ reduction\ function\ \
+polynomial\ coeffs\ *) \[IndentingNewLine]OCoeff\  = \ 
+          Table[polyOverlapCoeff[L, M, r], {r, L + 5, 
+              1, \ \(-2\)}]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<OCoeff````=``\>", L, M, 
+                MatrixForm[
+                  OCoeff]]];\)*) \[IndentingNewLine]\[IndentingNewLine] (*\ 
+          construct\ JMatrix\ *) \[IndentingNewLine]JMatrix\  = \ 
+          Table[0, \ {i, 1, matrixDimension}, {j, 1, 
+              matrixDimension}]; \[IndentingNewLine]\[IndentingNewLine] (*\ 
+          work\ backwards\ from\ rightmost\ column\ to\ leftmost\ column\ \
+*) \[IndentingNewLine]For[col = matrixDimension, 
+          col \[GreaterEqual] 
+            1, \ \(col--\), \[IndentingNewLine]\[IndentingNewLine]NN = 
+            highestN - \((matrixDimension - 
+                  col)\); \[IndentingNewLine]\[IndentingNewLine]For[
+            row = 1 + \((matrixDimension - col)\), \ 
+            row \[LessEqual] 
+              matrixDimension, \ \(row++\), \[IndentingNewLine]r = 
+              NN + 1 - 
+                2*\((row - \((1 + \((matrixDimension - 
+                              col)\))\))\); \[IndentingNewLine] (*\(Print[
+                  StringForm["\<col=``, row=``, N=``, r=``\>", col, row, NN, 
+                    r]];\)*) \[IndentingNewLine]\[IndentingNewLine]If[
+              r \[GreaterEqual] 
+                1, \[IndentingNewLine]JMatrix[\([row, col]\)] = 
+                polyJCoeff[NN, 
+                  r]\[IndentingNewLine]]\[IndentingNewLine]\[IndentingNewLine]\
+]\[IndentingNewLine]\[IndentingNewLine]]; \[IndentingNewLine]\
+\[IndentingNewLine] (*\(Print[
+              StringForm["\<JMatrix````=``\>", L, M, 
+                MatrixForm[
+                  JMatrix]]];\)*) \[IndentingNewLine]\[IndentingNewLine] (*\ 
+          invert\ matrix\ equation\ OCoeff\  = \ 
+            JMatrix\ *\ 
+              JCoeff\ to\ find\ JCoeff\ *) \[IndentingNewLine]JInvMatrix = 
+          Inverse[JMatrix]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<JInvMatrix````=``\>", L, M, 
+                MatrixForm[
+                  JInvMatrix]]];\)*) \[IndentingNewLine]\ \ \ \ \
+\[IndentingNewLine]JCoeff[L, M] = 
+          JInvMatrix\ \  . \ OCoeff; \[IndentingNewLine] (*\ 
+          reduce\ precision\ to\ 16\ digits\ *) \[IndentingNewLine]JCoeff[L, 
+            M] = N[JCoeff[L, M], 
+            16]; \[IndentingNewLine] (*\(Print[
+              StringForm["\<JCoeff````=``\>", L, M, 
+                JCoeff[L, 
+                  M]]];\)*) \[IndentingNewLine]]\[IndentingNewLine]]\)\(\
+\[IndentingNewLine]\)
+    \)\)\)], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\( (*\ 
+      display\ a\ couple\ of\ the\ new\ overlap\ reduction\ function\ \
+coefficients\ *) \)\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(For[
+      L = 0, \ L \[LessEqual] 1, \ \(L++\), \[IndentingNewLine]For[M = 0, \ 
+        M \[LessEqual] 
+          L, \ \(M++\), \[IndentingNewLine]\(Print[
+            StringForm["\<JCoeff````=``\>", L, M, 
+              MatrixForm[
+                JCoeff[L, 
+                  M]]]];\)\[IndentingNewLine]]\[IndentingNewLine]]\)\)\)], \
+"Input"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"JCoeff\\!\\(0\\)\\!\\(0\\)=\\!\\(\\*TagBox[\\((\
+\[NoBreak] \\*TagBox[GridBox[{{\\\"0.3651146538812443858155751994`16.\\\"}, {\
+\\(-0.2259963127900409445308423803`16.\\)}, \
+{\\(-0.1153163676602889124688202026`16.\\)}}, RowSpacings -> 1, \
+ColumnAlignments -> Left], Column] \[NoBreak])\\), Function[BoxForm`e$, \
+MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "JCoeff````=``", 0, 0, 
+        MatrixForm[ {
+          0.3651146538812443858155751994`16., \
+-0.2259963127900409445308423803`16., -0.1153163676602889124688202026`16.}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"JCoeff\\!\\(1\\)\\!\\(0\\)=\\!\\(\\*TagBox[\\((\
+\[NoBreak] \\*TagBox[GridBox[{{\\(0.6323971311102404567432590153`16.\\\\ \
+\[ImaginaryI]\\)}, {\\(\\(\\(-0.3914370960755790103048684794`16.\\)\\)\\\\ \
+\[ImaginaryI]\\)}, {\\(\\(\\(-0.1997338077319129758287734906`16.\\)\\)\\\\ \
+\[ImaginaryI]\\)}}, RowSpacings -> 1, ColumnAlignments -> Left], Column] \
+\[NoBreak])\\), Function[BoxForm`e$, MatrixForm[BoxForm`e$]]]\\)\"\>",
+      StringForm[ "JCoeff````=``", 1, 0, 
+        MatrixForm[ {
+          Complex[ 0, 0.6323971311102404567432590153`16.], 
+          Complex[ 0, -0.3914370960755790103048684794`16.], 
+          Complex[ 0, -0.1997338077319129758287734906`16.]}]],
+      Editable->False]], "Print"],
+
+Cell[BoxData[
+    InterpretationBox["\<\"JCoeff\\!\\(1\\)\\!\\(1\\)=\\!\\(\\*TagBox[\\((\
+\[NoBreak] \\*TagBox[GridBox[{{\\(0``59.329485255962254 + \
+\\(\\(0``59.03256288327373\\\\ \[ImaginaryI]\\)\\)\\)}, \
+{\\(0.289645273022607058805815237`15.74129055349796 - \
+\\(\\(0.6844079062374024053488808512`16.114739126081602\\\\ \
+\[ImaginaryI]\\)\\)\\)}, \
+{\\(\\(\\(-1.0837753279071510856385832796`16.134597253391085\\)\\) - \
+\\(\\(0.2988892906152717556310900393`15.575168347578149\\\\ \
+\[ImaginaryI]\\)\\)\\)}}, RowSpacings -> 1, ColumnAlignments -> Left], \
+Column] \[NoBreak])\\), Function[BoxForm`e$, MatrixForm[BoxForm`e$]]]\\)\"\>",
+      
+      StringForm[ "JCoeff````=``", 1, 1, 
+        MatrixForm[ {
+          Complex[ 0``59.329485255962254, 0``59.03256288327373], 
+          Complex[ 
+          0.289645273022607058805815237`15.74129055349796, \
+-0.6844079062374024053488808512`16.114739126081602], 
+          
+          Complex[ -1.0837753279071510856385832796`16.134597253391085, \
+-0.2988892906152717556310900393`15.575168347578149]}]],
+      Editable->False]], "Print"]
+}, Open  ]],
+
+Cell[BoxData[
+    \(\(\(\[IndentingNewLine]\)\(\[IndentingNewLine]\)\( (*\ 
+      write\ overlap\ reduction\ function\ coefficients\ to\ files\ *) \)\(\
+\[IndentingNewLine]\)\(\[IndentingNewLine]\)\(\(SetDirectory["\<~/src/matapps/\
+src/searches/stochastic/CrossCorr/\>"];\)\[IndentingNewLine]\
+\[IndentingNewLine]
+    For[L = 0, 
+      L \[LessEqual] Lmax, \ \(L++\), \[IndentingNewLine]For[M = 0, 
+        M \[LessEqual] 
+          L, \(M++\), \[IndentingNewLine]\[IndentingNewLine]filename\  = \ 
+          detectorPair <> "\<jcoeffs\>"\  <> \ ToString[L]\  <> \ 
+            ToString[M] <> "\<real.dat\>"; \[IndentingNewLine]Export[
+          filename, 
+          N[Re[JCoeff[L, M]], 
+            16], "\<List\>"]; \[IndentingNewLine]\[IndentingNewLine]filename\ \
+ = \ detectorPair <> "\<jcoeffs\>" <> \ ToString[L]\  <> \ 
+            ToString[M] <> "\<imag.dat\>"; \[IndentingNewLine]Export[
+          filename, 
+          N[Im[JCoeff[L, M]], 
+            16], "\<List\>"];\[IndentingNewLine]\[IndentingNewLine]]\
+\[IndentingNewLine]]\[IndentingNewLine]
+    \)\)\)], "Input"]
+},
+FrontEndVersion->"5.2 for Macintosh",
+ScreenRectangle->{{0, 1024}, {0, 709}},
+WindowSize->{909, 674},
+WindowMargins->{{40, Automatic}, {Automatic, 0}},
+PrintingCopies->1,
+PrintingPageRange->{1, Automatic},
+ShowSelection->True
+]
+
+(*******************************************************************
+Cached data follows.  If you edit this Notebook file directly, not
+using Mathematica, you must remove the line containing CacheID at
+the top of  the file.  The cache data will then be recreated when
+you save this file from within Mathematica.
+*******************************************************************)
+
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+
+(*NotebookFileOutline
+Notebook[{
+Cell[1754, 51, 405, 8, 75, "Input"],
+Cell[2162, 61, 973, 16, 251, "Input"],
+Cell[3138, 79, 318, 6, 91, "Input"],
+Cell[3459, 87, 405, 8, 107, "Input"],
+
+Cell[CellGroupData[{
+Cell[3889, 99, 4383, 72, 1211, "Input"],
+Cell[8275, 173, 114, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[8426, 181, 1675, 27, 379, "Input"],
+Cell[10104, 210, 478, 9, 59, "Print"],
+Cell[10585, 221, 480, 9, 53, "Print"],
+Cell[11068, 232, 482, 9, 53, "Print"],
+Cell[11553, 243, 827, 15, 53, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[12417, 263, 4384, 72, 1211, "Input"],
+Cell[16804, 337, 114, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[16955, 345, 1664, 27, 379, "Input"],
+Cell[18622, 374, 478, 9, 59, "Print"],
+Cell[19103, 385, 480, 9, 53, "Print"],
+Cell[19586, 396, 482, 9, 53, "Print"],
+Cell[20071, 407, 827, 15, 53, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[20935, 427, 3074, 68, 651, "Input"],
+Cell[24012, 497, 35, 1, 27, "Output"],
+Cell[24050, 500, 147, 3, 23, "Print"],
+Cell[24200, 505, 486, 9, 59, "Print"],
+Cell[24689, 516, 488, 9, 53, "Print"],
+Cell[25180, 527, 490, 9, 53, "Print"],
+Cell[25673, 538, 835, 15, 53, "Print"],
+Cell[26511, 555, 486, 9, 59, "Print"],
+Cell[27000, 566, 488, 9, 53, "Print"],
+Cell[27491, 577, 490, 9, 53, "Print"],
+Cell[27984, 588, 835, 15, 53, "Print"],
+Cell[28822, 605, 386, 7, 53, "Print"],
+Cell[29211, 614, 386, 7, 53, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[29634, 626, 3163, 66, 651, "Input"],
+Cell[32800, 694, 35, 1, 27, "Output"],
+Cell[32838, 697, 149, 3, 23, "Print"],
+Cell[32990, 702, 490, 9, 59, "Print"],
+Cell[33483, 713, 492, 9, 53, "Print"],
+Cell[33978, 724, 494, 9, 53, "Print"],
+Cell[34475, 735, 839, 15, 53, "Print"],
+Cell[35317, 752, 490, 9, 59, "Print"],
+Cell[35810, 763, 492, 9, 53, "Print"],
+Cell[36305, 774, 494, 9, 53, "Print"],
+Cell[36802, 785, 839, 15, 53, "Print"],
+Cell[37644, 802, 390, 7, 53, "Print"],
+Cell[38037, 811, 390, 7, 53, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[38464, 823, 2764, 53, 587, "Input"],
+Cell[41231, 878, 174, 3, 23, "Print"],
+Cell[41408, 883, 174, 3, 23, "Print"],
+Cell[41585, 888, 174, 3, 23, "Print"],
+Cell[41762, 893, 174, 3, 23, "Print"],
+Cell[41939, 898, 174, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[42150, 906, 427, 8, 107, "Input"],
+Cell[42580, 916, 576, 13, 26, "Print"],
+Cell[43159, 931, 657, 16, 28, "Print"],
+Cell[43819, 949, 954, 20, 25, "Print"],
+Cell[44776, 971, 1061, 24, 34, "Print"],
+Cell[45840, 997, 450, 10, 25, "Print"],
+Cell[46293, 1009, 910, 22, 31, "Print"],
+Cell[47206, 1033, 849, 18, 25, "Print"],
+Cell[48058, 1053, 553, 13, 26, "Print"],
+Cell[48614, 1068, 527, 12, 26, "Print"]
+}, Open  ]],
+Cell[49156, 1083, 1279, 25, 283, "Input"],
+Cell[50438, 1110, 2310, 46, 475, "Input"],
+Cell[52751, 1158, 739, 17, 155, "Input"],
+
+Cell[CellGroupData[{
+Cell[53515, 1179, 1957, 40, 443, "Input"],
+Cell[55475, 1221, 176, 3, 23, "Print"],
+Cell[55654, 1226, 176, 3, 23, "Print"],
+Cell[55833, 1231, 176, 3, 23, "Print"],
+Cell[56012, 1236, 176, 3, 23, "Print"],
+Cell[56191, 1241, 176, 3, 23, "Print"],
+Cell[56370, 1246, 176, 3, 23, "Print"],
+Cell[56549, 1251, 176, 3, 23, "Print"],
+Cell[56728, 1256, 176, 3, 23, "Print"],
+Cell[56907, 1261, 176, 3, 23, "Print"],
+Cell[57086, 1266, 176, 3, 23, "Print"],
+Cell[57265, 1271, 178, 3, 23, "Print"],
+Cell[57446, 1276, 178, 3, 23, "Print"],
+Cell[57627, 1281, 178, 3, 23, "Print"],
+Cell[57808, 1286, 178, 3, 23, "Print"],
+Cell[57989, 1291, 178, 3, 23, "Print"],
+Cell[58170, 1296, 178, 3, 23, "Print"],
+Cell[58351, 1301, 178, 3, 23, "Print"],
+Cell[58532, 1306, 178, 3, 23, "Print"],
+Cell[58713, 1311, 178, 3, 23, "Print"],
+Cell[58894, 1316, 178, 3, 23, "Print"],
+Cell[59075, 1321, 178, 3, 23, "Print"],
+Cell[59256, 1326, 178, 3, 23, "Print"],
+Cell[59437, 1331, 178, 3, 23, "Print"],
+Cell[59618, 1336, 178, 3, 23, "Print"],
+Cell[59799, 1341, 178, 3, 23, "Print"],
+Cell[59980, 1346, 178, 3, 23, "Print"],
+Cell[60161, 1351, 178, 3, 23, "Print"],
+Cell[60342, 1356, 178, 3, 23, "Print"],
+Cell[60523, 1361, 178, 3, 23, "Print"],
+Cell[60704, 1366, 178, 3, 23, "Print"],
+Cell[60885, 1371, 178, 3, 23, "Print"],
+Cell[61066, 1376, 213, 6, 23, "Print"],
+Cell[61282, 1384, 255, 7, 23, "Print"],
+Cell[61540, 1393, 380, 11, 38, "Print"],
+Cell[61923, 1406, 468, 13, 38, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[62428, 1424, 2281, 44, 555, "Input"],
+Cell[64712, 1470, 176, 3, 23, "Print"],
+Cell[64891, 1475, 176, 3, 23, "Print"],
+Cell[65070, 1480, 176, 3, 23, "Print"],
+Cell[65249, 1485, 176, 3, 23, "Print"],
+Cell[65428, 1490, 176, 3, 23, "Print"],
+Cell[65607, 1495, 176, 3, 23, "Print"],
+Cell[65786, 1500, 176, 3, 23, "Print"],
+Cell[65965, 1505, 176, 3, 23, "Print"],
+Cell[66144, 1510, 176, 3, 23, "Print"],
+Cell[66323, 1515, 176, 3, 23, "Print"],
+Cell[66502, 1520, 178, 3, 23, "Print"],
+Cell[66683, 1525, 178, 3, 23, "Print"],
+Cell[66864, 1530, 178, 3, 23, "Print"],
+Cell[67045, 1535, 178, 3, 23, "Print"],
+Cell[67226, 1540, 178, 3, 23, "Print"],
+Cell[67407, 1545, 178, 3, 23, "Print"],
+Cell[67588, 1550, 178, 3, 23, "Print"],
+Cell[67769, 1555, 178, 3, 23, "Print"],
+Cell[67950, 1560, 178, 3, 23, "Print"],
+Cell[68131, 1565, 178, 3, 23, "Print"],
+Cell[68312, 1570, 178, 3, 23, "Print"],
+Cell[68493, 1575, 178, 3, 23, "Print"],
+Cell[68674, 1580, 178, 3, 23, "Print"],
+Cell[68855, 1585, 178, 3, 23, "Print"],
+Cell[69036, 1590, 178, 3, 23, "Print"],
+Cell[69217, 1595, 178, 3, 23, "Print"],
+Cell[69398, 1600, 178, 3, 23, "Print"],
+Cell[69579, 1605, 178, 3, 23, "Print"],
+Cell[69760, 1610, 178, 3, 23, "Print"],
+Cell[69941, 1615, 178, 3, 23, "Print"],
+Cell[70122, 1620, 178, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[70337, 1628, 3769, 65, 891, "Input"],
+Cell[74109, 1695, 176, 3, 23, "Print"],
+Cell[74288, 1700, 176, 3, 23, "Print"],
+Cell[74467, 1705, 176, 3, 23, "Print"],
+Cell[74646, 1710, 176, 3, 23, "Print"],
+Cell[74825, 1715, 176, 3, 23, "Print"],
+Cell[75004, 1720, 176, 3, 23, "Print"],
+Cell[75183, 1725, 176, 3, 23, "Print"],
+Cell[75362, 1730, 176, 3, 23, "Print"],
+Cell[75541, 1735, 176, 3, 23, "Print"],
+Cell[75720, 1740, 176, 3, 23, "Print"],
+Cell[75899, 1745, 178, 3, 23, "Print"],
+Cell[76080, 1750, 178, 3, 23, "Print"],
+Cell[76261, 1755, 178, 3, 23, "Print"],
+Cell[76442, 1760, 178, 3, 23, "Print"],
+Cell[76623, 1765, 178, 3, 23, "Print"],
+Cell[76804, 1770, 178, 3, 23, "Print"],
+Cell[76985, 1775, 178, 3, 23, "Print"],
+Cell[77166, 1780, 178, 3, 23, "Print"],
+Cell[77347, 1785, 178, 3, 23, "Print"],
+Cell[77528, 1790, 178, 3, 23, "Print"],
+Cell[77709, 1795, 178, 3, 23, "Print"],
+Cell[77890, 1800, 178, 3, 23, "Print"],
+Cell[78071, 1805, 178, 3, 23, "Print"],
+Cell[78252, 1810, 178, 3, 23, "Print"],
+Cell[78433, 1815, 178, 3, 23, "Print"],
+Cell[78614, 1820, 178, 3, 23, "Print"],
+Cell[78795, 1825, 178, 3, 23, "Print"],
+Cell[78976, 1830, 178, 3, 23, "Print"],
+Cell[79157, 1835, 178, 3, 23, "Print"],
+Cell[79338, 1840, 178, 3, 23, "Print"],
+Cell[79519, 1845, 178, 3, 23, "Print"],
+Cell[79700, 1850, 172, 3, 23, "Print"],
+Cell[79875, 1855, 181, 4, 23, "Print"],
+Cell[80059, 1861, 172, 3, 23, "Print"],
+Cell[80234, 1866, 172, 3, 23, "Print"],
+Cell[80409, 1871, 181, 4, 23, "Print"],
+Cell[80593, 1877, 172, 3, 23, "Print"],
+Cell[80768, 1882, 172, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[80977, 1890, 1601, 32, 411, "Input"],
+Cell[82581, 1924, 176, 3, 23, "Print"],
+Cell[82760, 1929, 176, 3, 23, "Print"],
+Cell[82939, 1934, 176, 3, 23, "Print"],
+Cell[83118, 1939, 176, 3, 23, "Print"],
+Cell[83297, 1944, 176, 3, 23, "Print"],
+Cell[83476, 1949, 176, 3, 23, "Print"],
+Cell[83655, 1954, 176, 3, 23, "Print"],
+Cell[83834, 1959, 176, 3, 23, "Print"],
+Cell[84013, 1964, 176, 3, 23, "Print"],
+Cell[84192, 1969, 176, 3, 23, "Print"],
+Cell[84371, 1974, 178, 3, 23, "Print"],
+Cell[84552, 1979, 178, 3, 23, "Print"],
+Cell[84733, 1984, 178, 3, 23, "Print"],
+Cell[84914, 1989, 178, 3, 23, "Print"],
+Cell[85095, 1994, 178, 3, 23, "Print"],
+Cell[85276, 1999, 178, 3, 23, "Print"],
+Cell[85457, 2004, 178, 3, 23, "Print"],
+Cell[85638, 2009, 178, 3, 23, "Print"],
+Cell[85819, 2014, 178, 3, 23, "Print"],
+Cell[86000, 2019, 178, 3, 23, "Print"],
+Cell[86181, 2024, 178, 3, 23, "Print"],
+Cell[86362, 2029, 178, 3, 23, "Print"],
+Cell[86543, 2034, 178, 3, 23, "Print"],
+Cell[86724, 2039, 178, 3, 23, "Print"],
+Cell[86905, 2044, 178, 3, 23, "Print"],
+Cell[87086, 2049, 178, 3, 23, "Print"],
+Cell[87267, 2054, 178, 3, 23, "Print"],
+Cell[87448, 2059, 178, 3, 23, "Print"],
+Cell[87629, 2064, 178, 3, 23, "Print"],
+Cell[87810, 2069, 178, 3, 23, "Print"],
+Cell[87991, 2074, 178, 3, 23, "Print"]
+}, Open  ]],
+Cell[88184, 2080, 1531, 30, 331, "Input"],
+
+Cell[CellGroupData[{
+Cell[89740, 2114, 1691, 31, 443, "Input"],
+Cell[91434, 2147, 176, 3, 23, "Print"],
+Cell[91613, 2152, 178, 3, 23, "Print"],
+Cell[91794, 2157, 178, 3, 23, "Print"],
+Cell[91975, 2162, 178, 3, 23, "Print"],
+Cell[92156, 2167, 178, 3, 23, "Print"],
+Cell[92337, 2172, 178, 3, 23, "Print"],
+Cell[92518, 2177, 178, 3, 23, "Print"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+Cell[92733, 2185, 2099, 39, 539, "Input"],
+Cell[94835, 2226, 176, 3, 23, "Print"],
+Cell[95014, 2231, 176, 3, 23, "Print"],
+Cell[95193, 2236, 176, 3, 23, "Print"],
+Cell[95372, 2241, 176, 3, 23, "Print"],
+Cell[95551, 2246, 176, 3, 23, "Print"],
+Cell[95730, 2251, 176, 3, 23, "Print"],
+Cell[95909, 2256, 176, 3, 23, "Print"],
+Cell[96088, 2261, 176, 3, 23, "Print"],
+Cell[96267, 2266, 176, 3, 23, "Print"],
+Cell[96446, 2271, 176, 3, 23, "Print"],
+Cell[96625, 2276, 178, 3, 23, "Print"],
+Cell[96806, 2281, 178, 3, 23, "Print"],
+Cell[96987, 2286, 178, 3, 23, "Print"],
+Cell[97168, 2291, 178, 3, 23, "Print"],
+Cell[97349, 2296, 178, 3, 23, "Print"],
+Cell[97530, 2301, 178, 3, 23, "Print"],
+Cell[97711, 2306, 178, 3, 23, "Print"],
+Cell[97892, 2311, 178, 3, 23, "Print"],
+Cell[98073, 2316, 178, 3, 23, "Print"],
+Cell[98254, 2321, 178, 3, 23, "Print"],
+Cell[98435, 2326, 178, 3, 23, "Print"],
+Cell[98616, 2331, 178, 3, 23, "Print"],
+Cell[98797, 2336, 178, 3, 23, "Print"],
+Cell[98978, 2341, 178, 3, 23, "Print"],
+Cell[99159, 2346, 178, 3, 23, "Print"],
+Cell[99340, 2351, 178, 3, 23, "Print"],
+Cell[99521, 2356, 178, 3, 23, "Print"],
+Cell[99702, 2361, 178, 3, 23, "Print"],
+Cell[99883, 2366, 178, 3, 23, "Print"],
+Cell[100064, 2371, 178, 3, 23, "Print"],
+Cell[100245, 2376, 178, 3, 23, "Print"]
+}, Open  ]],
+Cell[100438, 2382, 3664, 68, 843, "Input"],
+
+Cell[CellGroupData[{
+Cell[104127, 2454, 539, 11, 139, "Input"],
+Cell[104669, 2467, 611, 11, 53, "Print"],
+Cell[105283, 2480, 746, 12, 53, "Print"],
+Cell[106032, 2494, 1083, 21, 55, "Print"]
+}, Open  ]],
+Cell[107130, 2518, 1082, 21, 299, "Input"]
+}
+]
+*)
+
+
+
+(*******************************************************************
+End of Mathematica Notebook file.
+*******************************************************************)
+

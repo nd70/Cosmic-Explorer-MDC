@@ -1,0 +1,12 @@
+executable = stochastic_multi_combine.sh
+output = errout_$(runid)/out.combine
+error = errout_$(runid)/err.combine
+arguments = $(postDir) $(ifos)
+requirements = Memory >= 128 && OpSys == "LINUX"
+universe = vanilla
+notification = never
+environment = HOME=$(home);LD_LIBRARY_PATH=$(ld_library_path);MATAPPS_TOP=$(matapps_top)
+log = /tmp/stochastic_combine.log
++MaxHours = 12
+queue 1
+

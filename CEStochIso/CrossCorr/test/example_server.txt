@@ -1,0 +1,119 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% example parameter file for using the datafind server
+%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Setting the useDatafindServer parameter to true
+% allows the pipeline to retrieve the frame cache
+% from the server specified in LIGO_DATAFIND_SERVER
+useDatafindServer true
+
+% stochastic output files
+writeOutputToMatFile true
+writeNaiveSigmasToFiles true
+writeSpectraToFiles true
+writeStatsToFiles true
+writeSensIntsToFiles true
+writeCoherenceToFiles true
+writeCalPSD1sToFiles true
+writeCalPSD2sToFiles true
+writeCohFToFiles true
+writeOptimalFiltersToFiles true
+writeOverlapReductionFunctionToFiles true
+
+% high-pass parameters
+useCascadeFilter1 true
+useCascadeFilter2 true
+doHighPass1 true
+doHighPass2 true
+highPassFreq1 11
+highPassFreq2 11
+highPassOrder1 16
+highPassOrder2 16
+
+% overalapping segments
+doOverlap true
+
+% do not use folded data
+doSidereal false
+
+% do not analyze less than 200s of data
+minDataLoadLength 200 
+
+% do not exclude any additional times
+doBadGPSTimes false
+
+% perform a time shift
+doShift1 true
+doShift2 false
+ShiftTime1 1
+ShiftTime2 0
+
+% use Hanford-Livingston pair
+ifo1 H1
+ifo2 L1
+
+% define properties of STAMP pixels
+segmentDuration 60
+numSegmentsPerInterval 3
+ignoreMidSegment true
+
+% duration of Hann window
+hannDuration1 60
+hannDuration2 60
+
+% define frequency range and resolution
+flow 10
+fhigh 1800
+deltaF 0.25
+
+% define standard stochastic parameters
+alphaExp 0
+fRef 100
+simOmegaRef 0
+heterodyned false
+resampleRate1 4096
+resampleRate2 4096
+bufferSecs1 2
+bufferSecs2 2
+nResample1 10
+nResample2 10
+betaParam1 5
+betaParam2 5
+
+% strain channel names
+ASQchannel1 DCS-CALIB_STRAIN_C02
+ASQchannel2 DCS-CALIB_STRAIN_C02
+
+% frame types
+frameType1 H1_HOFT_C02
+frameType2 L1_HOFT_C02
+
+% use default calibration
+alphaBetaFile1 none
+alphaBetaFile2 none
+calCavGainFile1 none
+calCavGainFile2 none
+calResponseFile1 none
+calResponseFile2 none
+
+% never mask frequency bins at the pre-processing stage
+doFreqMask false
+freqsToRemove
+nBinsToRemove
+
+% gpsTimesPath may be '<auto>' or a path may be specified.
+% If not '<auto>' and useDatafindServer is true the GPS files will be created
+% if necessary. In that case the directories must already exist ie. they must
+% be created by the user before stochastic.m is run.
+gpsTimesPath1 <auto>
+gpsTimesPath2 <auto>
+
+% paths to cachefiles
+frameCachePath1 ./cachefiles/
+frameCachePath2 ./cachefiles/
+
+% do not use Monte Carlo
+doDetectorNoiseSim false
+
+% output file location
+outputFilePrefix ./example

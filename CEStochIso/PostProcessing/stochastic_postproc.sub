@@ -1,0 +1,11 @@
+executable = stochastic_postproc.sh
+output = out.postproc
+error = err.postproc
+arguments = $(paramsFile) $(jobsFile) $(postDir) $(dSigmaCut) $(largeSigmaCutoff) $(doRenormalize) 0 0
+requirements = Memory >= 128 && OpSys == "LINUX"
+universe = vanilla
+notification = never
+environment = HOME=$(home);LD_LIBRARY_PATH=$(ld_library_path)
+log = stochastic_postproc.log
++MaxHours = 12
+queue 1

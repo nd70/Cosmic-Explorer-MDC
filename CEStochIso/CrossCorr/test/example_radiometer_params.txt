@@ -1,0 +1,143 @@
+% parameters for stochastic search (name/value pairs)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% flags for optional operations
+doDirectional true
+doNarrowbandRadiometer true
+doAllSkyComparison false
+doFreqMask true
+doHighPass1 true
+doHighPass2 true
+doMonteCarlo false
+doMCoffset false
+doConstTimeShift false
+doSimulatedPointSource false
+doOverlap true
+heterodyned false
+writeResultsToScreen false
+writeStatsToFiles true
+writeSpectraToFiles true 
+writeSensIntsToFiles true 
+writeOptimalFiltersToFiles true 
+writeOverlapReductionFunctionToFiles true 
+writeCalPSD1sToFiles true 
+writeCalPSD2sToFiles true  
+writeNaiveSigmasToFiles true
+doCombine true
+
+%Time Shift
+%doShift1 true
+
+%Time Shift
+%ShiftTime1 1
+
+% ifo names
+ifo1 H1
+ifo2 L1
+
+% timing transient subtraction
+doTimingTransientSubtraction1 false
+TimingTransientFile1 xxx
+doTimingTransientSubtraction2 false
+TimingTransientFile2 xxx
+
+% segment duration (sec)
+segmentDuration 60
+
+% parameters for sliding psd estimation:
+% numSegmentsPerInterval should be odd; ignoreMidSegment is a flag 
+% that allows you to ignore (if true) or include (if false) the 
+% analysis segment when estimating power spectra
+numSegmentsPerInterval 3
+ignoreMidSegment true
+
+% freq resolution and freq cutoffs for CC statistic sum (Hz)
+flow 40
+fhigh 170
+deltaF 0.25
+
+% params for Omega_gw (power-law exponent and reference freq in Hz)
+alphaExp 3
+fRef 100 
+
+% params for the radiometer search
+maxSegmentsPerMatfile 60
+useSignalSpectrumHfFromFile true
+HfFile Hf.txt
+HfFileInterpolateLogarithmic true
+useSkyPatternFile true
+SkyPatternFile scoX1Coords.txt
+SkyPatternRightAscensionNumPoints 360
+SkyPatternDeclinationNumPoints 181
+maxCorrelationTimeShift .011  
+UnphysicalTimeShift 0
+% Caution: maxCorrelationTimeShift has to be increased when UnphysicalTimeShift is non-zero
+% NB: a maxCorrelationTimeShift of 0.011, with UnphysicalTimeShift at 0 is good for doing real physics
+
+% resample rate (Hz)
+resampleRate1 1024 
+resampleRate2 1024 
+
+% buffer added to beginning and end of data segment to account for
+% filter transients (sec)
+bufferSecs1 2
+bufferSecs2 2
+
+% ASQ channel
+ASQchannel1 DCS-CALIB_STRAIN_C02
+ASQchannel2 DCS-CALIB_STRAIN_C02
+
+% frame type and duration
+frameType1 H1_RDS_C03_L2
+frameType2 L1_RDS_C03_L2
+frameDuration1 -1
+frameDuration2 -1
+
+minDataLoadLength 200
+
+% duration of hann portion of tukey window 
+% (hannDuration = segmentDuration is a pure hann window)
+hannDuration1 60
+hannDuration2 60
+
+% params for matlab resample routine
+nResample1 10
+nResample2 10
+betaParam1 5
+betaParam2 5
+
+% params for high-pass filtering (3db freq in Hz, and filter order) 
+highPassFreq1 32
+highPassFreq2 32
+highPassOrder1 6
+highPassOrder2 6
+
+freqsToRemove 60,120
+nBinsToRemove 1,1
+
+% number of trials for monte carlo simulations (if doMonteCarlo = true)
+numTrials 1
+
+% type of SB signal to simulate 
+% (const for Omega_gw=const, white for Omega_gw propto f^3)
+signalType const
+
+% value of Omega_gw(f_Ref) for simulated SB signal
+simOmegaRef 0
+
+alphaBetaFile1 none
+alphaBetaFile2 none
+calCavGainFile1 none
+calCavGainFile2 none
+calResponseFile1 none
+calResponseFile2 none
+
+% path to cache files
+gpsTimesPath1 <auto>
+gpsTimesPath2 <auto>
+frameCachePath1 ./cachefiles/
+frameCachePath2 ./cachefiles/
+
+% prefix for output filename
+outputFilePrefix ./radiometer

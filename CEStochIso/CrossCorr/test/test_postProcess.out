@@ -1,0 +1,28 @@
+[Warning: MATLAB has disabled some advanced graphics rendering features by switching to software OpenGL. For more information, click <a
+href="matlab:opengl('problems')">here</a>.] 
+Not applying delta sigma cut or user cuts.
+Final point estimate  = 1.057090e-06
+Final error bar   = 7.206430e-07
+Number segs = 109
+** Done runningPointEstimate
+Unable to load recovery file ./example_resumeCRfMJ.mat.  Will checkpoint.
+Checkpointed through job 4.
+combineResults ptEstimate = 1.057090e-06
+** Done combineResultsFromMultipleJobs
+Files of sliding results = ./example_ccstats.job1.trial1.dat to ./example_ccstats.job3.trial1.dat
+Read in 109 x 3
+Pt estimate = 1.057090e-06
+Error bar   = 7.206430e-07
+Number segs = 109
+Immediately preceding point estimate, sigma, and number of segments do not include cuts.
+Effect of various cuts on amount of data analyzed:
+Number of segments passing the dSigmaCut = 109
+Fraction (all sliding PSD data)/(all naive PSD data) = 1
+Fraction (data passing dSigmaCut)/(all naive PSD data) = 1
+Fraction (data passing dSigmaCut)/(all sliding PSD data) = 1
+Best standard deviation describing normalized residuals from KS test = 1.066000e+00
+Minimum of KS test = 6.826108e-02
+KS statistic value = 7.230243e-01
+** Done StatisticalAnalysisofResults_v2
+** Done FFTofPtEstIntegrand
+** Done postProcessScriptFull

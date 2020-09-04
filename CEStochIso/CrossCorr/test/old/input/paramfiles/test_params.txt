@@ -1,0 +1,110 @@
+% flags for optional operations
+doFreqMask true
+doHighPass1 true
+doHighPass2 true
+doMonteCarlo false
+doCombine true
+doOverlap true
+heterodyned false
+suppressFrWarnings true
+writeNaiveSigmasToFiles true
+writeResultsToScreen true
+writeStatsToFiles true
+writeSpectraToFiles true
+writeSensIntsToFiles true
+writeOptimalFiltersToFiles true
+writeCalPSD1sToFiles true
+writeCalPSD2sToFiles true
+
+% ifo names
+ifo1 H1 
+ifo2 H2
+
+% segment duration (sec)
+segmentDuration 60
+
+% parameters for sliding psd estimation:
+% numSegmentsPerInterval should be odd; ignoreMidSegment is a flag 
+% that allows you to ignore (if true) or include (if false) the 
+% analysis segment when estimating power spectra
+numSegmentsPerInterval 3
+ignoreMidSegment true
+
+% freq resolution and freq cutoffs for CC statistic sum (Hz)
+flow 70
+fhigh 220
+deltaF 0.25
+
+% params for Omega_gw (power-law exponent and reference freq in Hz)
+alphaExp 0
+fRef 100
+
+% resample rate (Hz)
+resampleRate1 1024
+resampleRate2 1024
+
+% buffer added to beginning and end of data segment to account for
+% filter transients (sec)
+bufferSecs1 1
+bufferSecs2 1
+
+% ASQ channel
+ASQchannel1 LSC-AS_Q
+ASQchannel2 LSC-AS_Q
+
+% frame type and duration
+frameType1 RDS_R_L3
+frameType2 RDS_R_L3
+frameDuration1 256
+frameDuration2 256
+
+% duration of hann portion of tukey window 
+% (hannDuration = segmentDuration is a pure hann window)
+hannDuration1 60
+hannDuration2 60
+
+% params for matlab resample routine
+nResample1 10
+nResample2 10
+betaParam1 5
+betaParam2 5
+
+% params for high-pass filtering (3db freq in Hz, and filter order) 
+highPassFreq1 40
+highPassFreq2 40
+highPassOrder1 6
+highPassOrder2 6
+
+% coherent freqs and number of freq bins to remove if doFreqMask=true;
+% NOTE: if an nBin=0, then no bins are removed even if doFreqMask=true
+% (coherent freqs are typically harmonics of the power line freq 60Hz
+% and the DAQ rate 16Hz)
+freqsToRemove 71.9,80,96,108.3,109.9,112,120,128,144,150.75,152.25,160,176,180,192,208
+nBinsToRemove 1,1,1,3,1,1,27,1,1,3,3,1,1,27,1,1
+
+% number of trials for monte carlo simulations (if doMonteCarlo = true)
+numTrials 10
+
+% type of SB signal to simulate 
+% (const for Omega_gw=const, white for Omega_gw propto f^3)
+signalType const
+
+% value of Omega_gw(f_Ref) for simulated SB signal
+simOmegaRef 1
+
+% calibration filenames
+alphaBetaFile1 old/input/calibration/UnityAlphaBetas.mat
+alphaBetaFile2 old/input/calibration/UnityAlphaBetas.mat
+calCavGainFile1 old/input/calibration/S04V3-H1-ASQCAL-CAV_GAIN-793099715.mat
+calCavGainFile2 old/input/calibration/S04V3-H2-ASQCAL-CAV_GAIN-793064176.mat
+calResponseFile1 old/input/calibration/S04V3-H1-CAL-ASQRESPONSE-793099715.mat
+calResponseFile2 old/input/calibration/S04V3-H2-CAL-ASQRESPONSE-793064176.mat
+
+% path to cache files
+gpsTimesPath1 old/input/cachefiles/
+gpsTimesPath2 old/input/cachefiles/
+frameCachePath1 old/input/cachefiles/
+frameCachePath2 old/input/cachefiles/
+
+% prefix for output filename
+outputFilePrefix old/output/test

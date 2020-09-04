@@ -1,0 +1,518 @@
+#!/bin/sh
+# Don't change this line or the next one \
+exec tclsh "$0" "$@"
+set usage \
+"Usage: stochastic_pipe --paramsfile paramsFile --jobsfile jobsFile
+       \[ --dagfile dagFile \] \[ --submitfile submitFile \]
+       \[ --server datafindServer \] \[ --add-post-processing \]
+       \[ --postprocfile postProcessingFile \] \[ --verbose \]
+       \[ --force \] \[ --help \]
+
+       stochastic_pipe -p paramsFile -j jobsFile \[ -d dagFile \]
+       \[ -s submitFile \] \[ -r datafindServer \] \[ -a \]
+       \[ -pp postProcessingFile \] \[ -v \] \[ -f \] \[ -h \]"
+set helpText "\
+ -p, --paramsfile paramsFile
+     File containing search parameters. This is the same file as used
+     for stochastic.m.
+ -j, --jobsfile jobsFile
+     File containing list of time segments from SegWizard.
+ -jl,--jobList (optional, default is all jobs in jobsfile)
+     Space separated list of job numbers to add to DAG.
+ -d, --dagfile dagFile (optional, default is stochastic_pipe.dag)
+     Name of output DAG file.
+ -s, --submitfile submitFile (optional, default is stochastic_pipe.sub)
+     Name of submit file to be used in DAG.
+ -r, --server datafindServer (optional, default is \$LIGO_DATAFIND_SERVER)
+     IP address of ligo_data_find server. If this is not provided, the
+     value in the LIGO_DATAFIND_SERVER environment variable is used. If that
+     is not set, a default of ldas-gridmon.ligo.caltech.edu is used.
+ -f, --force (optional, default is disabled)
+     If present, forces the script to overwrite existing cache files.
+     Default behaviour is to skip files that already exist.
+ -a, --add-post-processing (optional, default is disabled)
+     If present, adds a post-processing job to the DAG file. This job
+     is a child of all of the analysis jobs and so is run only after all
+     the analysis jobs are complete.
+ -v, --verbose (optional, default is disabled)
+     Turn on verbose output.
+ -h, --help (optional)
+     Help.
+
+The following switches are used only if -a or --add-post-processing are set.
+ -pp, --postprocfile (default is stochastic_postproc.sub)
+     Name of the post-processing submit file to use.
+ -t, --postDir (default is postoutput)
+     Postprocessing output directory.
+ -c, --dSigmaCut (default is 0.2)
+     Relative sigma threshold.
+ -l, --largeSigmaCutoff (default is false)
+     Absolute sigma threshold.
+ -n, --doRenormalize (default is false)
+     \"true\" to renormalize in postprocessing, \"false\" otherwise.
+
+This script produces the cache files and DAG files needed to run the
+stochastic search in Condor for a given list of jobs obtained from SegWizard.
+Other parameters are obtained from the same parameter file used by
+stochastic.m.
+
+The required inputs of the script are
+
+1) A jobs file. This file contains a list of time segments in the form produced
+by SegWizard.
+2) A parameters file. This is the same file used to provide parameters to
+stochastic.m.
+
+The products of this script are
+
+1) A set of frame cache files of the form gpsTimesX.N.txt and
+frameFilesX.N.txt in the cache directories specified in the parameters file,
+where X stands for an observatory letter (eg. H, L, G) and N stands for a
+job number.
+2) A Condor DAG file. The default is stochastic_pipe.dag."
+
+# Write informative messages when in verbose mode
+proc trace { msg } {
+  if { $::verbose } {
+    puts $msg
+  }
+}
+
+# Returns the value of param as set in paramsFile. If a parameter is set
+# multiple times in the same file, this routine will always return the
+# last value.
+proc get_param { param paramsFile } {
+  if { ! [ file exists $paramsFile ] } {
+    puts "Parameters file not found: $paramsFile"
+    exit 1
+  }
+  set f [ open $paramsFile r ]
+  while { [ gets $f line ] > -1 } {
+    if { [ lindex $line 0 ] == $param } {
+      set value [ lindex $line 1 ]
+    }
+  }
+  close $f
+  if { [ info exists value ] } {
+    return $value
+  } else {
+    puts stderr "Error: $param: value not found in $paramsFile"
+    exit 1
+  }
+}
+
+# Returns a list of time segments from jobsFile. The returned
+# list is in the form of a "list of lists" of GPS start and end times
+# eg. {757659067 757661692} {757662772 757663252} ...
+proc get_segList { jobsFile } {
+
+  ## open jobsFile for reading
+  if { ! [ file exists $jobsFile ] } {
+    puts "Jobs file not found: $jobsFile"
+    exit 1
+  }
+  set in [ open $jobsFile r ]
+
+  set segList {}
+  set line {}
+  while { [ gets $in line ] > -1 } {
+
+    ## check for comment and blank lines (indicated with leading % or #)
+    if { [ regexp {^%} $line ] || [ regexp {^\#} $line ]
+        || [ string length $line ] == 0 } {
+      continue
+    } else {
+      lappend segList [ lrange $line 1 2 ]
+    }
+  }
+
+  close $in
+
+  return $segList
+}
+
+# Create the two cache files required by stochastic.m for a particular job
+proc create_cache_files { datafindServer job gpsStart gpsEnd obs frameType timesFilename filesFilename } {
+
+  trace "Creating cache files for job $job observatory $obs"
+
+  if { [ catch { exec ligo_data_find --no-proxy --match=node -r $datafindServer -o $obs -t $frameType -s $gpsStart -e $gpsEnd -u file } urls ] } {
+    puts "Warning: no files returned"
+    puts "ligo_data_find --no-proxy --match=node -r $datafindServer -o $obs -t $frameType -s $gpsStart -e $gpsEnd -u file returned $urls"
+    set ::returnValue -1
+    return
+  }
+
+  set urls [ split $urls ]
+  set flist {}
+  foreach url $urls {
+    regsub {file://localhost} $url "" filename
+    set gpsTime [ file tail $filename ]
+    set gpsTime [ split $gpsTime - ]
+    set gpsTime [ lindex $gpsTime 2 ]
+    
+    # Join the two parts back together so that we can keep the gpstimes
+    # associated with the correct filenames and sort by gpstime
+    lappend flist "$gpsTime $filename"
+  }
+  set flist [ lsort $flist ]
+
+  set timesFile [ open $timesFilename w ]
+  set filesFile [ open $filesFilename w ]
+  foreach f $flist {
+    puts $timesFile [ lindex $f 0 ]
+    puts $filesFile [ lindex $f 1 ]
+  }
+
+  close $timesFile
+  close $filesFile
+}
+
+# Create the cache files required for all jobs in the segment list
+proc create_cache { datafindServer segList obs frameType gpsTimesPath frameCachePath force } {
+
+  if { ! [ file isdirectory $gpsTimesPath ] } {
+    puts stderr "GPS times directory does not exist: $gpsTimesPath"
+    exit 1
+  }
+
+  if { ! [ file isdirectory $frameCachePath ] } {
+    puts stderr "Frame cache directory does not exist: $frameCachePath"
+    exit 1
+  }
+
+  ## Fast way to list the contents of the cache directories
+  set flist1 [ glob -nocomplain $gpsTimesPath/gpsTimes${obs}* ]
+  set flist2 [ glob -nocomplain $frameCachePath/frameFiles${obs}* ]
+
+  ## loop over jobs, executing ligo_data_find command
+  set job 0
+  foreach seg $segList {
+
+    incr job
+
+    ## extract start and end time
+    set gpsStart [ lindex $seg 0 ]
+    set gpsEnd [ lindex $seg 1 ]
+ 
+    ## construct output filenames
+    set timesFilename ${gpsTimesPath}/gpsTimes${obs}.${job}.txt
+    set filesFilename ${frameCachePath}/frameFiles${obs}.${job}.txt
+
+    ## This test means that if *both* timesFilename and filesFilename
+    ## exist, we don't overwrite them, but if only one or neither exist,
+    ## we write both. This is to ensure that both files are consistent,
+    ## while keeping down the number of times we have to query
+    ## the datafind server. Writing both files can be forced with the
+    ## --force option. Crazy as it might seem, it is many times faster to
+    ## check for the existence of the file this way using glob and lsearch
+    ## than by using the "file exists" command.
+    if { [ lsearch $flist1 $timesFilename ] == -1
+        || [ lsearch $flist2 $filesFilename ] == -1
+        || $force } {
+    create_cache_files $datafindServer $job $gpsStart $gpsEnd $obs $frameType $timesFilename $filesFilename
+    } else {
+      trace "Cache files for job $job observatory $obs exist, skipping"
+    }
+
+  }
+
+}
+
+##
+## Main
+##
+
+set ::TRUE 1
+set ::FALSE 0
+
+## Default variables
+set paramsFile {}
+set jobsFile {}
+set jobList {}
+set dagFile stochastic_pipe.dag
+set submitFile stochastic_pipe.sub
+set postProcFile stochastic_postproc.sub
+set postDir postoutput
+set dSigmaCut 0.2
+set largeSigmaCutoff "false"
+set doRenormalize "false"
+
+## Return value for program exit status
+##   0  - all ok
+##   -1 - warning, but otherwise ok
+##   1  - error
+set returnValue 0
+
+## First try to set the default server from the environment
+foreach { var datafindServer } [ array get env LIGO_DATAFIND_SERVER ] continue
+
+## If that fails, use this as the default server
+if { ! [ info exists datafindServer ] } {
+  set datafindServer ldas-gridmon.ligo.caltech.edu
+}
+
+set force $::FALSE
+set ::verbose $::FALSE
+set ::add_post_processing $::FALSE
+
+## parse command line arguments
+set index 0
+while { $index < $argc } {
+  set arg [ lindex $argv $index ]
+  switch -- $arg {
+    --paramsfile -
+    -p {
+      incr index
+      set paramsFile [ lindex $argv $index ]
+      incr index
+    }
+    --jobsfile -
+    -j {
+      incr index
+      set jobsFile [ lindex $argv $index ]
+      incr index
+    }
+    --jobList -
+    -jl {
+      incr index
+      ## Allow for the possibility of multiple job numbers
+      set i 0
+      set stop [expr {$argc - $index}]
+      while {$i < $stop && [expr [ string first - [ lindex $argv $index ]] == -1]} {
+          lappend jobList [ lindex $argv $index ]
+          incr index
+      }
+    }
+    --dagfile -
+    -d {
+      incr index
+      set dagFile [ lindex $argv $index ]
+      incr index
+    }
+    --submitfile -
+    -s {
+      incr index
+      set submitFile [ lindex $argv $index ]
+      incr index
+    }
+    --server -
+    -r {
+      incr index
+      set datafindServer [ lindex $argv $index ]
+      incr index
+    }
+    --force -
+    -f {
+      set force $::TRUE
+      incr index
+    }
+    --add-post-processing -
+    -a {
+      set add_post_processing $::TRUE
+      incr index
+    }
+    --verbose -
+    -v {
+      set verbose $::TRUE
+      incr index
+    }
+    --help -
+    -h {
+      puts "$usage\n"
+      puts "$helpText\n"
+      incr index
+      exit 0
+    }
+    --postprocfile -
+    -pp {
+      incr index
+      set postProcFile [ lindex $argv $index ]
+      incr index
+    }
+    --postDir -
+    -t {
+      incr index
+      set postDir [ lindex $argv $index ]
+      incr index
+    }
+    --dSigmaCut -
+    -c {
+      incr index
+      set dSigmaCut [ lindex $argv $index ]
+      incr index
+    }
+    --largeSigmaCutoff -
+    -l {
+      incr index
+      set largeSigmaCutoff [ lindex $argv $index ]
+      incr index
+    }
+    --doRenormalize -
+    -n {
+      incr index
+      set doRenormalize [ lindex $argv $index ]
+      incr index
+    }
+    default {
+      puts stderr "Error: unknown parameter $arg"
+      puts stderr $usage
+      exit 1
+    }
+  }
+}
+
+if { [ string length $paramsFile ] == 0 } {
+  puts stderr "Error: missing parameter --paramsfile"
+  puts stderr $usage
+  exit 1
+}
+
+if { ! [ file exists $paramsFile ] } {
+  puts stderr "Error: file not found: $paramsFile"
+  exit 1
+}
+
+if { [ string length $jobsFile ] == 0 } {
+  puts stderr "Error: missing parameter --jobsfile"
+  puts stderr $usage
+  exit 1
+}
+
+if { ! [ file exists $jobsFile ] } {
+  puts stderr "Error: file not found: $jobsFile"
+  exit 1
+}
+
+if { [ string length $dagFile ] == 0 } {
+  puts stderr "Error: missing parameter --dagfile"
+  puts stderr $usage
+  exit 1
+}
+
+if { [ string length $submitFile ] == 0 } {
+  puts stderr "Error: missing parameter --submitfile"
+  puts stderr $usage
+  exit 1
+}
+
+trace "Using datafind server $datafindServer"
+
+## Get segment list
+set segList [ get_segList $jobsFile ]
+
+##
+## Create cache files for first observatory
+##
+set observatory [ string index [ get_param ifo1 $paramsFile ] 0 ]
+set frameType [ get_param frameType1 $paramsFile ]
+
+set gpsTimesPath [ get_param gpsTimesPath1 $paramsFile ]
+if { [ string index $gpsTimesPath end ] == "/" } {
+  set gpsTimesPath [ string replace $gpsTimesPath end end ]
+}
+
+set frameCachePath [ get_param frameCachePath1 $paramsFile ]
+if { [ string index $frameCachePath end ] == "/" } {
+  set frameCachePath [ string replace $frameCachePath end end ]
+}
+
+create_cache $datafindServer $segList $observatory $frameType $gpsTimesPath $frameCachePath $force
+trace "Observatory $observatory cache files completed"
+
+##
+## Create cache files for second observatory
+##
+set observatory [ string index [ get_param ifo2 $paramsFile ] 0 ]
+set frameType [ get_param frameType2 $paramsFile ]
+
+set gpsTimesPath [ get_param gpsTimesPath2 $paramsFile ]
+if { [ string index $gpsTimesPath end ] == "/" } {
+  set gpsTimesPath [ string replace $gpsTimesPath end end ]
+}
+
+set frameCachePath [ get_param frameCachePath2 $paramsFile ]
+if { [ string index $frameCachePath end ] == "/" } {
+  set frameCachePath [ string replace $frameCachePath end end ]
+}
+
+create_cache $datafindServer $segList $observatory $frameType $gpsTimesPath $frameCachePath $force
+trace "Observatory $observatory cache files completed"
+
+##
+## Create the DAG file
+##
+
+##
+## Matlab R14 may coredump if the HOME variable is not set, so we need
+## to set this variable to something in the Condor environment. It doesn't
+## need to be correct as long as it's defined to be something.
+##
+## Note we don't set the return value to non-zero since this is a very
+## easily recoverable error.
+foreach { var home } [ array get env HOME ] continue
+if { ! [ info exists home ] } {
+  set home "/tmp"
+  puts "Warning: no HOME environment variable set, using $home"
+}
+
+##
+## The LD_LIBRARY_PATH needs to be set so compiled-Matlab executables will
+## work. I don't know in advance which version of Matlab is being used so
+## for the moment I'll assume that the LD_LIBRARY_PATH is set up so that
+## the stochastic executable can be run in the current user's environment,
+## and just use that value.
+##
+foreach { var ld_library_path } [ array get env LD_LIBRARY_PATH ] continue
+if { ! [ info exists ld_library_path ] } {
+  puts stderr \
+"Error: LD_LIBRARY_PATH must be set so that the executable knows where to find
+Matlab shared libraries. If the MATLAB environment variable is set use the
+following command in csh or tcsh:
+
+    setenv LD_LIBRARY_PATH \${MATLAB}/bin/glnx86:\${MATLAB}/extern/lib/glnx86:\${MATLAB}/sys/os/glnx86
+
+or the following command in bash:
+
+    LD_LIBRARY_PATH=\${MATLAB}/bin/glnx86:\${MATLAB}/extern/lib/glnx86:\${MATLAB}/sys/os/glnx86"
+
+  exit 1
+}
+
+## Create the job list (just a sequence of numbers) if not set
+if {$jobList == {}} {
+set job 1
+foreach seg $segList {
+  set jobList [ lappend jobList $job ]
+  incr job
+}} 
+
+set f [ open $dagFile w ]
+
+foreach job $jobList {
+  puts $f "JOB $job $submitFile"
+  puts $f "VARS $job paramsFile=\"$paramsFile\" jobsFile=\"$jobsFile\" jobNumber=\"$job\" home=\"$home\" ld_library_path=\"$ld_library_path\""
+  puts $f ""
+}
+
+## Insert a "dummy" job with job number 0 as a parent to all the real jobs.
+## This will allow the pipeline to work correctly with Matlab R14
+set job 0
+puts $f "JOB $job $submitFile"
+puts $f "VARS $job paramsFile=\"$paramsFile\" jobsFile=\"$jobsFile\" jobNumber=\"$job\" home=\"$home\" ld_library_path=\"$ld_library_path\""
+puts $f "PARENT $job CHILD $jobList"
+puts $f ""
+
+## Now write lines for the post-processing if required
+## This job is a child of all the stochastic jobs
+if { $::add_post_processing } {
+  set job [ expr [ llength $segList ] + 1 ]
+  puts $f "JOB $job $postProcFile"
+  puts $f "VARS $job paramsFile=\"$paramsFile\" jobsFile=\"$jobsFile\" postDir=\"$postDir\" dSigmaCut=\"$dSigmaCut\" largeSigmaCutoff=\"$largeSigmaCutoff\" doRenormalize=\"$doRenormalize\" home=\"$home\" ld_library_path=\"$ld_library_path\""
+  puts $f "PARENT $jobList CHILD $job"
+}
+
+close $f
+trace "DAG file $dagFile created"
+
+exit $returnValue

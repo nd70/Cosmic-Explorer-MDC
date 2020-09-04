@@ -1,0 +1,12 @@
+executable = stochastic.sh
+output = errout_$(runid)/out_$(ifopair).$(jobNumber)
+error = errout_$(runid)/err_$(ifopair).$(jobNumber)
+arguments = $(paramsFile) $(jobsFile) $(jobNumber) $(prevjobs)
+requirements = Memory >= 128 && OpSys == "LINUX"
+universe = vanilla
+notification = never
+environment = HOME=$(home);LD_LIBRARY_PATH=$(ld_library_path);MATAPPS_TOP=$(matapps_top)
+log = /tmp/stochastic_pipe.log
++MaxHours = 12
+queue 1
+

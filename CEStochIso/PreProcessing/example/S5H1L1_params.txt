@@ -1,0 +1,120 @@
+% parameters for stochastic search (name/value pairs)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% flags for optional operations
+doFreqMask false
+doHighPass1 true
+doHighPass2 true
+doOverlap true
+
+doSidereal false
+
+minDataLoadLength 200
+ 
+doBadGPSTimes false
+%badGPSTimesFile 
+maxDSigRatio 1.2
+minDSigRatio 0.8
+
+% TIME SHIFT IS ON
+doShift1 true
+ShiftTime1 1
+doShift2 false
+ShiftTime2 0
+
+% ifo names
+ifo1 H1
+ifo2 L1
+
+% segment duration (sec)
+segmentDuration 60
+
+% (numSegmentsPerInterval - 1)/2 = the number of segments on each wing used to
+% calculate the PSDs used for sigma
+numSegmentsPerInterval 3
+ignoreMidSegment true
+
+% freq resolution and freq cutoffs for CC statistic sum (Hz)
+flow 40
+fhigh 2000
+deltaF 0.25
+
+% params for Omega_gw (power-law exponent and reference freq in Hz)
+alphaExp 0
+fRef 100
+
+% resample rate (Hz)
+resampleRate1 4096
+resampleRate2 4096
+
+% buffer added to beginning and end of data segment to account for
+% filter transients (sec)
+bufferSecs1 2
+bufferSecs2 2
+
+% ASQ channel
+ASQchannel1 LSC-STRAIN
+ASQchannel2 LSC-STRAIN
+
+% frame type and duration
+frameType1 H1_RDS_C03_L2
+frameType2 L1_RDS_C03_L2
+frameDuration1 -1
+frameDuration2 -1
+
+% duration of hann portion of tukey window 
+% (hannDuration = segmentDuration is a pure hann window)
+%hannDuration1 0
+%hannDuration2 0
+hannDuration1 60
+hannDuration2 60
+
+% params for matlab resample routine
+nResample1 10
+nResample2 10
+betaParam1 5
+betaParam2 5
+
+% params for high-pass filtering (3db freq in Hz, and filter order) 
+highPassFreq1 32
+highPassFreq2 32
+highPassOrder1 6
+highPassOrder2 6
+
+% coherent freqs and number of freq bins to remove if doFreqMask=true;
+% NOTE: if an nBin=0, then no bins are removed even if doFreqMask=true
+% (coherent freqs are typically harmonics of the power line freq 60Hz
+% and the DAQ rate 16Hz)
+freqsToRemove 
+nBinsToRemove 
+ 
+% calibration filenames
+alphaBetaFile1 none
+alphaBetaFile2 none
+calCavGainFile1 none
+calCavGainFile2 none
+calResponseFile1 none
+calResponseFile2 none
+
+% value of Omega_gw(f_Ref) for simulated SB signal
+simOmegaRef 0
+
+heterodyned false
+
+% path to cache files
+gpsTimesPath1 /archive/home/ethrane/cache/S5H1L1/
+gpsTimesPath2 /archive/home/ethrane/cache/S5H1L1/
+frameCachePath1 /archive/home/ethrane/cache/S5H1L1/
+frameCachePath2 /archive/home/ethrane/cache/S5H1L1/
+
+% STAMP injection
+DoStampInj false
+StampInjRA 6
+StampInjDECL 30
+StampInjStart 816065704
+StampInjType PSD
+StampInjFile PSD_test_file.dat
+
+%output filename prefix
+outputFilePrefix frames/S5H1L1

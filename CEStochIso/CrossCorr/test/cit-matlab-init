@@ -1,0 +1,71 @@
+#! /usr/bin/env bash
+#
+# wrapper script to run MATLAB executables at Atlas
+#
+# *** assumes Release 2008a - 'glnxa64' 64-bit x86-64
+
+##################################################
+
+# - define MCR installation location **SYSTEM-DEPENDENT**
+#  -- This is for Atlas grid computer - late May 2008
+export MCR_ROOT=/ldcg/matlab_r2012a
+export ARCH=glnxa64
+
+# Add MCR location to LD_LIBRARY_PATH
+#   We check that LD_LIBRARY_PATH is defined and that we
+#       haven't already added MCR to this
+#    ** we add sys/opengl/lib/glnxa64 to cover dependencies missed
+#           in previous compiler revs
+#    ** we have added /bin/glnxa64 due to some known compiler problems if
+#               tracking down all dependencies
+#
+if [ ! "$LD_LIBRARY_PATH" ] 
+  then
+    export LD_LIBRARY_PATH=${MCR_ROOT}/sys/opengl/lib/glnxa64
+    export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64/server:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64/native_threads:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${MCR_ROOT}/bin/glnxa64:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${MCR_ROOT}/sys/os/glnxa64:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${MCR_ROOT}/runtime/glnxa64:${LD_LIBRARY_PATH}
+  else
+    echo $LD_LIBRARY_PATH | grep ${MCR_ROOT}/runtime/glnxa64 > /dev/null
+    if [ "$?" -ne 0 ]  
+      then
+        export LD_LIBRARY_PATH=${MCR_ROOT}/sys/opengl/lib/glnxa64:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64/server:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/sys/java/jre/glnxa64/jre/lib/amd64/native_threads:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/bin/glnxa64:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/sys/os/glnxa64:${LD_LIBRARY_PATH}
+        export LD_LIBRARY_PATH=${MCR_ROOT}/runtime/glnxa64:${LD_LIBRARY_PATH}
+    fi
+fi
+export XAPPLRESDIR=${MCR_ROOT}/X11/app-defaults
+
+# set the shell to exit on error
+set -e
+
+# make temporary home
+TEMPDIR=$(mktemp -d)
+OLDHOME="$HOME"
+export HOME="$TEMPDIR"
+printf "using temp home: %s\n" "$TEMPDIR" >&2
+
+# cleanup function to purge temporary home
+cleanup() {
+    printf "copying files from temp home and removing..." >&2
+    #(cd "${TEMPDIR}" && \
+	#find . \
+	#! -wholename '*/.matlab*' \
+	#! -wholename '*/.mcr_cache*' \
+	#| cpio -pdu --quiet "${OLDHOME}")
+    rm -rf "$TEMPDIR"
+    printf " done.\n" >&2
+}
+
+# set a trap to run cleanup function
+trap cleanup EXIT
+
+# run the command
+eval "$@"

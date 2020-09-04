@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+from gwpy.segments import (DataQualityFlag, DataQualityDict, Segment, SegmentList)
+from gwpy.time import tconvert, from_gps, to_gps
+import numpy as np
+from warnings import warn
+import sys
+import optparse
+
+# inputs:
+# xml veto definer file
+# documentation of the flags to use from veto definer file
+# start time of job file (gps)
+# end time of job file (gps)
+
+def parse_command_line():
+        """
+        parse command line
+        """
+        parser = optparse.OptionParser()
+        parser.add_option("--start-time", "-s",
+                help="start date and time (in tconvert readable string format, or gps time)", default=None,
+                dest="st", type=str)
+        parser.add_option("--end-time", "-e",
+                help="end date and time (in tconvert readable string format, or gps time)", default=None,
+                dest="et",type=str)
+        parser.add_option("--veto-definer", "-d",
+                help="veto definer file (optional)", default=None,
+                dest="xmldoc", type=str)
+        parser.add_option("--flag-doc", "-f",
+                help="set of flags to include (optional)", default=None,
+                dest="flag_doc", type=str)
+        parser.add_option("--extra-cut-file", "-c",
+                help="file with extra times to cut (optional)", default=None,
+                dest="extra_cut", type=str)
+        parser.add_option("--min-job-length","-m",
+                        help="min job length (optional)", default=200,
+                        dest="mindur",type=int)
+        parser.add_option("--pre-lock-loss", "-p",
+                help="pre lock loss time (optional)", default=30,
+                dest="pre_lock_loss", type=int)
+        params, args = parser.parse_args()
+        return params
+
+params = parse_command_line()
+# get inputs (hack together argparser and rest of file)
+xmldoc = params.xmldoc
+flag_doc = params.flag_doc
+extra_cut = params.extra_cut
+print '==== Making job file from %s-%s ===='%(params.st,params.et)
+st = to_gps(params.st)
+et = to_gps(params.et)
+pre_lock_loss = params.pre_lock_loss
+
+# populate bad segments Segment List
+bad_segs = SegmentList()
+LOCKED_FLAGS = ['H1:DMT-ANALYSIS_READY:1','L1:DMT-ANALYSIS_READY:1']
+# if you don't have both xml and flag docs, then
+# don't try to do anything with them... 
+if xmldoc is not None and flag_doc is not None:
+    # get list of flags in veto-definer file
+    dqdict = DataQualityDict.from_veto_definer_file(xmldoc)
+    DQ_FLAGS = []
+
+    # read in DQ flags that I actually want to use from flag_doc
+    f = open(flag_doc,'r')
+    for line in f:
+        DQ_FLAGS.append(line.split(' ')[0].rstrip())
+    f.close()
+
+    # loop over DQ flags we choose to use in veto definer
+    for DQ_FLAG in DQ_FLAGS:
+        try:
+            # get segments associated with this flag
+            segs = DataQualityFlag.query_segdb(DQ_FLAG, dqdict[DQ_FLAG].known)
+        except KeyError:
+            print DQ_FLAG
+            continue
+        for seg in segs.active:
+            # dict[DQ_FLAG].padding is a tuple
+            # first element is negative, second positive
+            # pad segments
+            st_seg = seg[0] + dqdict[DQ_FLAG].padding[0]
+            et_seg = seg[1] + dqdict[DQ_FLAG].padding[1]
+            # append to bad segments
+            bad_segs.append(Segment(st_seg,et_seg))
+            # 
+
+# load any extra times not in veto definer
+# e.g. low frequency notching
+# file has format:
+# "starttime    duration"
+if extra_cut is not None:
+    f = np.loadtxt(extra_cut);
+    for ii in range(len(f)):
+        bad_segs.append(Segment([f[ii,0],f[ii,0] + f[ii,1]]))
+
+
+# coalesce combines continuous segments and sorts
+# the segments
+bad_segs = bad_segs.coalesce()
+
+# create total segment for time we want
+# to make job file for
+total_seg = Segment(st, et)
+
+# segments that are NOT bad
+job_segs = SegmentList()
+First = 1
+for ii in range(len(bad_segs)):
+    # if end of bad segment is before start time
+    # continue on...
+    if bad_segs[ii][1] < total_seg[0]:
+        continue
+    # if start of bad seg is after or equal to 
+    # end time, then we'll add the last good segment
+    # and then break the loop
+    if bad_segs[ii][0] >= total_seg[1]:
+        good_seg = Segment(bad_segs[ii-1][1],total_seg[1])
+        job_segs.append(good_seg)
+        break
+    # if it's the first segment in our list
+    if First:
+        # if bad seg is contained partially or wholly in total_seg and overlaps
+        # start time, then move on to the next segment, where we'll start actually
+        # finding good segments.
+        if bad_segs[ii][0] <= total_seg[0] and bad_segs[ii][1] >= total_seg[0]:
+            First = 0
+            continue
+        # if there's some time in between start time of run and start time
+        # of this bad segment, then that is "good time" that we want to keep.
+        else:
+            job_segs.append(Segment(total_seg[0],bad_segs[ii][0]))
+            First = 0
+    else:
+        # if the time between the end of the last bad segment
+        # and the beginning of this one is less than 200s, 
+        # then keep on going
+        if (bad_segs[ii][0] - bad_segs[ii-1][1]) < 200:
+            continue
+        # otherwise, the time between the end of the last bad segment
+        # and the start of this one is "good time" that we 
+        # could consider running over. 
+        good_seg = Segment(bad_segs[ii-1][1],bad_segs[ii][0])
+        job_segs.append(good_seg)
+    # make sure job_segs and bad_segs are mutually exclusive.
+    # we check this after each iteration and print out
+    if job_segs.intersects(bad_segs):
+        raise ValueError('something is amiss...')
+if len(job_segs) == 0:
+    job_segs.append(total_seg)
+    print 'WARNING: veto definer may not be specified or is not defined for your whole requested time range'
+# consider some edge cases
+# there are no bad segments
+# end of last bad segment is before start of time range
+elif bad_segs[-1][1]< total_seg[0]:
+    print 'All bad segs are before time range'
+    job_segs.append(total_seg)
+# start of first bad segment is after time range
+elif bad_segs[0][0] > total_seg[1]:
+    print 'All bad segs are after time range'
+    job_segs.append(total_seg)
+# end of last bad segments is before end of requested time
+# (but we haven't triggered above statement)
+elif bad_segs[-1][1]<total_seg[1]:
+    print 'Adding edge case, last bad time ends before end of requested time'
+    job_segs.append(Segment(bad_segs[-1][1],total_seg[1]))
+elif bad_segs[0][0] > total_seg[0]:
+    print 'Adding edge case, first bad time starts after beginning of requested time'
+    job_segs.append(Segment(total_seg[0], bad_segs[0][0]))
+
+# write intermediate products to file for now
+job_segs.write('job_segs.dat')
+bad_segs.write('bad_segs.dat')
+
+# get locked data for each non-bad segment
+job_segments = SegmentList()
+for seg in job_segs:
+    segs = DataQualityDict.query_dqsegdb(LOCKED_FLAGS,seg[0],seg[1])
+    temp_segs = segs.intersection()
+    temp_segs2 = SegmentList()
+    for seg2 in temp_segs.active:
+        if seg2[1] == seg[1]:
+            seg_temp = Segment(seg2[0],seg2[1] - pre_lock_loss)
+        else:
+            seg_temp = Segment(seg2[0],seg2[1])
+        temp_segs2.append(seg_temp)
+    job_segments.extend(temp_segs2)
+# write non-bad and locked segments to file
+# that's our job file!
+fname = 'JOB-FILE-%d-%d.dat' % (st,et)
+print 'Done getting job segments...writing to file here:'
+print '\t%s' % fname
+f = open(fname,'w')
+for seg in job_segments:
+    dur = seg[1]-seg[0]
+    if dur < params.mindur:
+        continue
+    spcs_needed = len(str(dur))
+    spcs = ''
+    for ii in range(7-spcs_needed):
+        spcs+=' '
+    f.write('   1 %d  %d%s%d\n' % (seg[0], seg[1], spcs, dur))

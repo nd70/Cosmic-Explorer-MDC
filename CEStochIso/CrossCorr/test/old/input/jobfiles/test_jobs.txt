@@ -1,0 +1,2 @@
+%seg    start      stop    duration
+   1  793177024  793178048   1024

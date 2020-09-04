@@ -1,0 +1,96 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+doFreqMask false
+doHighPass1 true
+doHighPass2 true
+doOverlap true
+
+doSidereal true
+
+minDataLoadLength 200
+ 
+doBadGPSTimes false
+maxDSigRatio 1.2
+minDSigRatio 0.8
+
+doShift1 true
+ShiftTime1 1
+doShift2 false
+ShiftTime2 0
+
+ifo1 H1
+ifo2 L1
+
+%segmentDuration 1
+segmentDuration 2
+
+numSegmentsPerInterval 9
+ignoreMidSegment true
+
+flow 40
+fhigh 2000
+deltaF 1
+
+alphaExp 0
+fRef 100
+
+resampleRate1 4096
+resampleRate2 4096
+
+bufferSecs1 2
+bufferSecs2 2
+
+ASQchannel1 LSC-STRAIN
+ASQchannel2 LSC-STRAIN
+
+frameType1 H1_RDS_C03_L2
+frameType2 L1_RDS_C03_L2
+frameDuration1 -1
+frameDuration2 -1
+
+%hannDuration1 1
+%hannDuration2 1
+hannDuration1 2
+hannDuration2 2
+
+nResample1 10
+nResample2 10
+betaParam1 5
+betaParam2 5
+
+highPassFreq1 32
+highPassFreq2 32
+highPassOrder1 6
+highPassOrder2 6
+
+freqsToRemove 
+nBinsToRemove 
+ 
+alphaBetaFile1 none
+alphaBetaFile2 none
+calCavGainFile1 none
+calCavGainFile2 none
+calResponseFile1 none
+calResponseFile2 none
+
+simOmegaRef 0
+heterodyned false
+
+gpsTimesPath1 /archive/home/ethrane/cache/S5H1L1/
+gpsTimesPath2 /archive/home/ethrane/cache/S5H1L1/
+frameCachePath1 /archive/home/ethrane/cache/S5H1L1/
+frameCachePath2 /archive/home/ethrane/cache/S5H1L1/
+
+DoStampInj true
+StampInjRA 6
+StampInjDECL 30
+StampInjStart 816085822
+
+StampInjType time_series
+StampInjFile /archive/home/ethrane/preproc/demo/M10a0.95eps0.2_20Mpc.dat
+
+doDetectorNoiseSim false
+DetectorNoiseFile LIGOsrdPSD_40Hz.txt
+
+outputFilePrefix frames/S5H1L1_ADI
+

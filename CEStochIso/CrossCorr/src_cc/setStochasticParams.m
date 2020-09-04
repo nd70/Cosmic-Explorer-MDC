@@ -1,0 +1,35 @@
+function params = setStochasticParams(paramsFile, startTime, jobDuration)
+%
+%  setStochasticParams --- set the fields of the params structure
+%
+%  Routine written by Joseph D. Romano, John T. Whelan, Vuk Mandic.
+%  Contact Joseph.Romano@astro.cf.ac.uk, john.whelan@ligo.org and/or
+%  vmandic@ligo.caltech.edu
+%
+%  $Id: $
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  % Create the params structure and populate it with default values
+  params = setDefaultParams(paramsFile, startTime, jobDuration);
+
+  % read the params file, which may override parameters set in defaults
+  params = readParamsFromFile(params);
+
+  %
+  % Set some derived fields once the defaults and user settings have been read
+  %
+
+  % set total number of discrete frequencies
+  params.numFreqs = floor((params.fhigh - params.flow)/params.deltaF) + 1;
+
+  % Take site letter (for detector geometry) from IFO name,
+  % unless overridden in parameter file
+  params.site1 = getsitefromletter(params.ifo1(1));
+  params.site2 = getsitefromletter(params.ifo2(1));
+
+  if params.suppressFrWarnings
+    warning off frgetvect:info;
+  end;
+
+return;

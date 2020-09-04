@@ -1,0 +1,12 @@
+executable = stochastic_postproc.sh
+output = errout_$(runid)/out_$(ifopair).postproc
+error = errout_$(runid)/err_$(ifopair).postproc
+arguments = $(paramsFile) $(jobsFile) $(postDir) $(dSigmaCut) $(largeSigmaCutoff) $(doRenormalize) $(modifyFilter) 1
+requirements = Memory >= 128 && OpSys == "LINUX"
+universe = vanilla
+notification = never
+environment = HOME=$(home);LD_LIBRARY_PATH=$(ld_library_path);MATAPPS_TOP=$(matapps_top)
+log = /tmp/stochastic_postproc.log
++MaxHours = 12
+queue 1
+
